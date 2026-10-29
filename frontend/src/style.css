@@ -17,3 +17,13 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .portalShell{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:24px 16px;background:radial-gradient(circle at top,#641624,#0b0b0d 58%)}
 .portalBox{width:min(440px,100%);padding:32px;background:#19191c;border:1px solid #473039;border-top:3px solid #ed3045;border-radius:24px;box-shadow:0 20px 65px #0007}
 .portalBack{color:white;text-decoration:none;font-weight:900;letter-spacing:2px}.portalBack span{color:#fa596a}.portalMark{font-size:52px;color:#ef394c;text-align:center;margin-top:20px}.portalBox h1{text-align:center;font-size:29px;margin-bottom:4px}.portalSub{text-align:center;color:#bcb1b4;margin-bottom:26px}.socialSoon{border-top:1px solid #453039;margin-top:25px;padding-top:15px;text-align:center;color:#bbaeb1}.socialSoon span{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#f77785}.socialSoon small{display:block}.qrPanel{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.qrWhite{padding:15px;background:white;border-radius:15px}.qrPanel .secondary{margin:0;text-decoration:none;display:inline-block}
+
+/* Responsive Google identity sign-in */
+.portalBox{min-width:0;overflow:hidden}
+.socialSoon{width:100%;min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:12px}
+.googleLogin{width:100%;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.googleLogin>div{width:100%;max-width:400px;display:flex;justify-content:center;overflow:hidden}
+.authDivider{position:relative;width:100%;text-align:center;color:#b8aeb1;font-size:13px}
+.authDivider::before{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px solid #493039}
+.authDivider span{position:relative;background:#19191c;padding:0 12px}
+@media(max-width:480px){.portalBox{padding:24px 20px}.googleLogin>div{max-width:100%}}
