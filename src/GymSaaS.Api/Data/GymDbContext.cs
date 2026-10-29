@@ -14,6 +14,7 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
  protected override void OnModelCreating(ModelBuilder b){
   b.Entity<Gym>().HasIndex(x=>x.Slug).IsUnique();
   b.Entity<AppUser>().HasIndex(x=>x.Email).IsUnique();
+  b.Entity<AppUser>().HasIndex(x=>x.GoogleSubject).IsUnique();
   b.Entity<AppUser>().HasIndex(x=>x.GymId);
   b.Entity<MemberIdentity>().HasIndex(x=>new{x.GymId,x.Email}).IsUnique();
   b.Entity<MemberIdentity>().HasIndex(x=>x.MemberId).IsUnique();
