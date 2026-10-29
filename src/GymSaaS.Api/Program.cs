@@ -1,4 +1,5 @@
 using GymSaaS.Api.Members;
+using System.Threading.RateLimiting;
 using GymSaaS.Api.Public;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -28,10 +29,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
  IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),ClockSkew=TimeSpan.FromSeconds(30)
 });
 builder.Services.AddAuthorization();
+builder.Services.AddRateLimiter(options=>{
+ options.RejectionStatusCode=StatusCodes.Status429TooManyRequests;
+ options.AddPolicy("auth-ip",ctx=>RateLimitPartition.GetFixedWindowLimiter(
+  ctx.Connection.RemoteIpAddress?.ToString()??"unknown",
+  _=>new FixedWindowRateLimiterOptions {PermitLimit=8,Window=TimeSpan.FromMinutes(1),QueueLimit=0,AutoReplenishment=true}));
+});
 builder.Services.AddCors(o=>o.AddPolicy("Frontend",p=>p.WithOrigins(builder.Configuration.GetSection("FrontendOrigins").Get<string[]>()??["http://localhost:5173","https://gymsaascr.vercel.app"]).AllowAnyHeader().AllowAnyMethod()));
 var app=builder.Build();
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/health",()=>Results.Ok(new{status="ok",app="GymSaaS"}));
@@ -46,14 +54,14 @@ app.MapPost("/api/auth/register",async(RegisterRequest req,GymDbContext db,IPass
  db.Gyms.Add(gym);db.Users.Add(user);
  try {await db.SaveChangesAsync();}catch(DbUpdateException){return Results.Conflict(new{message="Email or gym slug already in use."});}
  return Results.Ok(new{gymId=gym.Id,gymName=gym.Name,token=tokens.Issue(user)});
-}).AddEndpointFilter<ValidationFilter<RegisterRequest>>().AllowAnonymous();
+}).AddEndpointFilter<ValidationFilter<RegisterRequest>>().RequireRateLimiting("auth-ip").AllowAnonymous();
 app.MapPost("/api/auth/login",async(LoginRequest req,GymDbContext db,IPasswordHasher<AppUser> hasher,TokenService tokens)=>{
  var email=req.Email.Trim().ToLowerInvariant();
  var user=await db.Users.AsNoTracking().SingleOrDefaultAsync(u=>u.Email==email);
  if(user is null || hasher.VerifyHashedPassword(user,user.PasswordHash,req.Password)==PasswordVerificationResult.Failed)return Results.Unauthorized();
  if(!await db.Gyms.AnyAsync(g=>g.Id==user.GymId&&g.IsActive))return Results.Unauthorized();
  return Results.Ok(new{token=tokens.Issue(user),user=new{user.Id,user.FullName,user.Role,user.GymId}});
-}).AddEndpointFilter<ValidationFilter<LoginRequest>>().AllowAnonymous();
+}).AddEndpointFilter<ValidationFilter<LoginRequest>>().RequireRateLimiting("auth-ip").AllowAnonymous();
 app.MapGet("/api/auth/me",async(ClaimsPrincipal principal,GymDbContext db)=>{
  var idText=principal.FindFirstValue(JwtRegisteredClaimNames.Sub)??principal.FindFirstValue(ClaimTypes.NameIdentifier);
  var gymText=principal.FindFirstValue("gym_id");
