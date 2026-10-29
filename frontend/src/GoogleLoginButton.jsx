@@ -8,7 +8,7 @@ export default function GoogleLoginButton({onCredential}){
   const render=()=>{
    if(cancelled||!node.current||!window.google?.accounts?.id)return;
    window.google.accounts.id.initialize({client_id:clientId,callback:response=>callback.current(response.credential),auto_select:false});
-   window.google.accounts.id.renderButton(node.current,{theme:'outline',size:'large',width:300,text:'continue_with'});
+   window.google.accounts.id.renderButton(node.current,{theme:'outline',size:'large',width:Math.max(200,Math.min(400,Math.floor(node.current.getBoundingClientRect().width||300))),text:'continue_with'});
   };
   if(window.google?.accounts?.id){render();}
   else{
