@@ -1,3 +1,4 @@
+using GymSaaS.Api.Members;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -58,11 +59,7 @@ app.MapGet("/api/auth/me",async(ClaimsPrincipal principal,GymDbContext db)=>{
  var user=await db.Users.AsNoTracking().Where(u=>u.Id==id&&u.GymId==gymId).Select(u=>new{u.Id,u.FullName,u.Email,u.Role,u.GymId}).SingleOrDefaultAsync();
  return user is null ? Results.Unauthorized() : Results.Ok(user);
 }).RequireAuthorization();
-app.MapGet("/api/members",async(ClaimsPrincipal principal,GymDbContext db)=>{
- if(!Guid.TryParse(principal.FindFirstValue("gym_id"),out var gymId))return Results.Unauthorized();
- var members=await db.Members.AsNoTracking().Where(m=>m.GymId==gymId).OrderBy(m=>m.FullName).Select(m=>new{m.Id,m.FullName,m.Email,m.Phone}).ToListAsync();
- return Results.Ok(members);
-}).RequireAuthorization(policy=>policy.RequireRole("Owner"));
+app.MapMemberEndpoints();
 app.Run();
 
 public sealed class ValidationFilter<T>:IEndpointFilter {
