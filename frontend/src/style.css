@@ -13,3 +13,7 @@
 .navitem.on{border-left:3px solid var(--gym-red);background:linear-gradient(90deg,#4a1c26,#20191d)}
 .panel{box-shadow:0 8px 28px #0002}.metrics .panel{border-top:2px solid #7e2a36}.metrics .panel strong{color:#ff646e}
 input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offset:2px}
+
+.portalShell{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:24px 16px;background:radial-gradient(circle at top,#641624,#0b0b0d 58%)}
+.portalBox{width:min(440px,100%);padding:32px;background:#19191c;border:1px solid #473039;border-top:3px solid #ed3045;border-radius:24px;box-shadow:0 20px 65px #0007}
+.portalBack{color:white;text-decoration:none;font-weight:900;letter-spacing:2px}.portalBack span{color:#fa596a}.portalMark{font-size:52px;color:#ef394c;text-align:center;margin-top:20px}.portalBox h1{text-align:center;font-size:29px;margin-bottom:4px}.portalSub{text-align:center;color:#bcb1b4;margin-bottom:26px}.socialSoon{border-top:1px solid #453039;margin-top:25px;padding-top:15px;text-align:center;color:#bbaeb1}.socialSoon span{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#f77785}.socialSoon small{display:block}.qrPanel{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.qrWhite{padding:15px;background:white;border-radius:15px}.qrPanel .secondary{margin:0;text-decoration:none;display:inline-block}
