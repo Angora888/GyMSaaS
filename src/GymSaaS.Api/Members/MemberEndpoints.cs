@@ -11,7 +11,7 @@ public sealed record MemberInput(
 public static class MemberEndpoints {
  public static IEndpointRouteBuilder MapMemberEndpoints(this IEndpointRouteBuilder app) {
   var group=app.MapGroup("/api/members").RequireAuthorization(policy=>policy.RequireRole("Owner"));
-  group.MapGet("/",async (ClaimsPrincipal principal,GymDbContext db,string? search)=>{
+  group.MapGet("",async (ClaimsPrincipal principal,GymDbContext db,string? search)=>{
    if(!Tenant(principal,out var gymId))return Results.Unauthorized();
    var query=db.Members.AsNoTracking().Where(x=>x.GymId==gymId);
    if(!string.IsNullOrWhiteSpace(search)){
@@ -21,7 +21,7 @@ public static class MemberEndpoints {
    }
    return Results.Ok(await query.OrderBy(x=>x.FullName).Take(200).Select(x=>new{x.Id,x.FullName,x.Email,x.Phone}).ToListAsync());
   });
-  group.MapPost("/",async(ClaimsPrincipal principal,GymDbContext db,MemberInput input)=>{
+  group.MapPost("",async(ClaimsPrincipal principal,GymDbContext db,MemberInput input)=>{
    if(!Tenant(principal,out var gymId))return Results.Unauthorized();
    if(!Valid(input,out var problem))return problem;
    var member=new Member{GymId=gymId,FullName=input.FullName.Trim(),Email=Clean(input.Email)?.ToLowerInvariant(),Phone=Clean(input.Phone)};
