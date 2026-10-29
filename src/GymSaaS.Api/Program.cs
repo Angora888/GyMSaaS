@@ -1,4 +1,5 @@
 using GymSaaS.Api.Members;
+using GymSaaS.Api.Public;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -19,6 +20,7 @@ var jwtIssuer=builder.Configuration["Jwt:Issuer"]??"GymSaaS";
 var jwtAudience=builder.Configuration["Jwt:Audience"]??"GymSaaS.Client";
 builder.Services.AddDbContext<GymDbContext>(o=>o.UseNpgsql(conn));
 builder.Services.AddScoped<IPasswordHasher<AppUser>,PasswordHasher<AppUser>>();
+builder.Services.AddScoped<IPasswordHasher<MemberIdentity>,PasswordHasher<MemberIdentity>>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o=>o.TokenValidationParameters=new TokenValidationParameters{
  ValidateIssuer=true,ValidIssuer=jwtIssuer,ValidateAudience=true,ValidAudience=jwtAudience,
@@ -60,6 +62,7 @@ app.MapGet("/api/auth/me",async(ClaimsPrincipal principal,GymDbContext db)=>{
  return user is null ? Results.Unauthorized() : Results.Ok(user);
 }).RequireAuthorization();
 app.MapMemberEndpoints();
+app.MapGymPortal();
 app.Run();
 
 public sealed class ValidationFilter<T>:IEndpointFilter {
