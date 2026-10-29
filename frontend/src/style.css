@@ -48,3 +48,15 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .mhNav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:8px;background:#19191e;border-top:1px solid #493038;padding:10px 12px max(15px,env(safe-area-inset-bottom))}
 .mhNav button{flex:1;max-width:210px;padding:13px 8px;border:0;border-radius:14px;background:transparent;color:#adb0ba;font-weight:700}
 .mhNav button.active{background:#e63047;color:white}
+
+
+.membershipLayout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.membershipForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 15px;margin-bottom:22px}
+.membershipForm label{min-width:0}
+.membershipForm input,.membershipForm select{width:100%;padding:13px;border-radius:11px;color:#f9f9fa;background:#101013;border:1px solid #554047;min-width:0}
+.membershipForm button{grid-column:1/-1;margin-top:10px}
+.membershipRow{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:15px 0;border-top:1px solid #392c30}
+.membershipRow span{color:#b8aeb1;font-size:13px}
+.membershipMessage{color:#95dfb4;background:#193828;border-radius:10px;padding:12px}
+@media(max-width:1050px){.membershipLayout{grid-template-columns:1fr}}
+@media(max-width:500px){.membershipForm{grid-template-columns:1fr}}
