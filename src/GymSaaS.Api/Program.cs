@@ -78,6 +78,7 @@ app.MapGet("/api/auth/gym",async(ClaimsPrincipal principal,GymDbContext db)=>{
 }).RequireAuthorization(p=>p.RequireRole("Owner"));
 app.MapMemberEndpoints();
 app.MapGymPortal();
+app.MapGoogleMember();
 app.Run();
 
 public sealed class ValidationFilter<T>:IEndpointFilter {
