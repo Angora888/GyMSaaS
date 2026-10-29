@@ -1,4 +1,5 @@
 using GymSaaS.Api.Members;
+using GymSaaS.Api.Email;
 using System.Threading.RateLimiting;
 using GymSaaS.Api.Public;
 using System.IdentityModel.Tokens.Jwt;
@@ -23,6 +24,7 @@ builder.Services.AddDbContext<GymDbContext>(o=>o.UseNpgsql(conn));
 builder.Services.AddScoped<IPasswordHasher<AppUser>,PasswordHasher<AppUser>>();
 builder.Services.AddScoped<IPasswordHasher<MemberIdentity>,PasswordHasher<MemberIdentity>>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHttpClient<ITransactionalEmailSender,ResendEmailSender>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o=>o.TokenValidationParameters=new TokenValidationParameters{
  ValidateIssuer=true,ValidIssuer=jwtIssuer,ValidateAudience=true,ValidAudience=jwtAudience,
  ValidateLifetime=true,ValidateIssuerSigningKey=true,
