@@ -1,4 +1,4 @@
-using GymSaaS.Api.Attendance;
+using GymSaaS.Api.CheckIn;
 using GymSaaS.Api.Members;
 using GymSaaS.Api.Email;
 using System.Threading.RateLimiting;
