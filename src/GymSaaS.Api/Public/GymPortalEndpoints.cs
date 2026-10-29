@@ -53,14 +53,14 @@ public static class GymPortalEndpoints {
     await tx.RollbackAsync();
     return Results.Problem(title: "No fue posible guardar la cuenta. Contactá al administrador.", statusCode: 500);
    }
-  });
+  }).RequireRateLimiting("auth-ip");
   app.MapPost("/api/public/gyms/{slug}/login",async(string slug,MemberLogin input,GymDbContext db,IConfiguration config,IPasswordHasher<MemberIdentity> hasher)=>{
    var gym=await db.Gyms.AsNoTracking().SingleOrDefaultAsync(g=>g.Slug==slug&&g.IsActive);
    if(gym is null)return Results.NotFound();
    var identity=await db.MemberIdentities.AsNoTracking().SingleOrDefaultAsync(x=>x.GymId==gym.Id&&x.Email==input.Email.Trim().ToLowerInvariant());
    if(identity is null||hasher.VerifyHashedPassword(identity,identity.PasswordHash,input.Password)==PasswordVerificationResult.Failed)return Results.Unauthorized();
    return Results.Ok(new{token=Token(identity,config)});
-  });
+  }).RequireRateLimiting("auth-ip");
   app.MapGet("/api/member/me",async(ClaimsPrincipal user,GymDbContext db)=>{
    if(!Guid.TryParse(user.FindFirstValue("gym_id"),out var gym)||!Guid.TryParse(user.FindFirstValue("member_id"),out var memberId))return Results.Unauthorized();
    var data=await db.Members.AsNoTracking().Where(x=>x.GymId==gym&&x.Id==memberId).Select(x=>new{x.Id,x.FullName,x.Email,x.Phone}).FirstOrDefaultAsync();
