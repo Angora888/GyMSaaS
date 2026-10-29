@@ -17,6 +17,8 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
   b.Entity<AppUser>().HasIndex(x=>x.GymId);
   b.Entity<MemberIdentity>().HasIndex(x=>new{x.GymId,x.Email}).IsUnique();
   b.Entity<MemberIdentity>().HasIndex(x=>x.MemberId).IsUnique();
+  b.Entity<Member>().HasAlternateKey(x=>new{x.GymId,x.Id});
+  b.Entity<MemberIdentity>().HasOne<Member>().WithMany().HasForeignKey(x=>new{x.GymId,x.MemberId}).HasPrincipalKey(m=>new{m.GymId,m.Id}).OnDelete(DeleteBehavior.Restrict);
   b.Entity<Member>().HasIndex(x=>new{x.GymId,x.Email});
   b.Entity<Attendance>().HasIndex(x=>new{x.GymId,x.MemberId,x.CheckedInAt});
   b.Entity<MembershipPlan>().Property(x=>x.Price).HasPrecision(12,2);
