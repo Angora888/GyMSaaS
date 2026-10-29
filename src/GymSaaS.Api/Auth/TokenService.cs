@@ -11,7 +11,7 @@ public sealed class TokenService(IConfiguration config) {
   var expires=DateTime.UtcNow.AddHours(8);
   var claims=new[] { new Claim(JwtRegisteredClaimNames.Sub,user.Id.ToString()),new Claim(JwtRegisteredClaimNames.Email,user.Email),new Claim("gym_id",user.GymId.ToString()),new Claim(ClaimTypes.Role,user.Role) };
   var credentials=new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),SecurityAlgorithms.HmacSha256);
-  var jwt=new JwtSecurityToken(issuer:config["Jwt:Issuer"],audience:config["Jwt:Audience"],claims:claims,expires:expires,signingCredentials:credentials);
+  var jwt=new JwtSecurityToken(issuer:config["Jwt:Issuer"]??"GymSaaS",audience:config["Jwt:Audience"]??"GymSaaS.Client",claims:claims,expires:expires,signingCredentials:credentials);
   return new { accessToken=new JwtSecurityTokenHandler().WriteToken(jwt),expiresAt=expires,tokenType="Bearer" };
  }
 }
