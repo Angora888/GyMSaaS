@@ -61,6 +61,11 @@ app.MapGet("/api/auth/me",async(ClaimsPrincipal principal,GymDbContext db)=>{
  var user=await db.Users.AsNoTracking().Where(u=>u.Id==id&&u.GymId==gymId).Select(u=>new{u.Id,u.FullName,u.Email,u.Role,u.GymId}).SingleOrDefaultAsync();
  return user is null ? Results.Unauthorized() : Results.Ok(user);
 }).RequireAuthorization();
+app.MapGet("/api/auth/gym",async(ClaimsPrincipal principal,GymDbContext db)=>{
+ if(!Guid.TryParse(principal.FindFirstValue("gym_id"),out var gymId))return Results.Unauthorized();
+ var gym=await db.Gyms.AsNoTracking().Where(x=>x.Id==gymId&&x.IsActive).Select(x=>new{x.Name,x.Slug}).SingleOrDefaultAsync();
+ return gym is null?Results.NotFound():Results.Ok(gym);
+}).RequireAuthorization(p=>p.RequireRole("Owner"));
 app.MapMemberEndpoints();
 app.MapGymPortal();
 app.Run();
