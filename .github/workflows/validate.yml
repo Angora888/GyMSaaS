@@ -1,0 +1,33 @@
+name: Validate GymSaaS
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore API
+        run: dotnet restore src/GymSaaS.Api/GymSaaS.Api.csproj
+      - name: Build API
+        run: dotnet build src/GymSaaS.Api/GymSaaS.Api.csproj --no-restore --configuration Release
+      - name: Publish API for Azure
+        run: dotnet publish src/GymSaaS.Api/GymSaaS.Api.csproj --no-restore -c Release -o "${{ runner.temp }}/gymsaas-publish"
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install packages
+        run: npm install --no-audit --no-fund
+      - name: Build React
+        run: npm run build
