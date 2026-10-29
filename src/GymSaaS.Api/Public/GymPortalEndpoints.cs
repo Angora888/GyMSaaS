@@ -6,6 +6,7 @@ using GymSaaS.Api.Data;
 using GymSaaS.Api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GymSaaS.Api.Public;
@@ -31,13 +32,27 @@ public static class GymPortalEndpoints {
    var email=input.Email.Trim().ToLowerInvariant();
    if(await db.MemberIdentities.AnyAsync(x=>x.GymId==gym.Id&&x.Email==email))return Results.Conflict(new{message="Esta cuenta ya está registrada en el gimnasio."});
    await using var tx=await db.Database.BeginTransactionAsync();
-   var member=new Member{GymId=gym.Id,FullName=input.FullName.Trim(),Email=email};
-   var identity=new MemberIdentity{GymId=gym.Id,MemberId=member.Id,Email=email,PasswordHash=""};
-   identity.PasswordHash=hasher.HashPassword(identity,input.Password);
-   db.Members.Add(member);db.MemberIdentities.Add(identity);
-   try{await db.SaveChangesAsync();await tx.CommitAsync();}
-   catch(DbUpdateException){await tx.RollbackAsync();return Results.Conflict(new{message="No fue posible completar el registro. Verifica que no exista la cuenta."});}
-   return Results.Ok(new{token=Token(identity,config),member=new{member.Id,member.FullName,member.Email}});
+   try {
+    // Persist parent first: the database has a composite foreign key from MemberIdentities to Members.
+    // Keep both writes atomic so a failure never leaves an orphan member.
+    var member=new Member{GymId=gym.Id,FullName=input.FullName.Trim(),Email=email};
+    db.Members.Add(member);
+    await db.SaveChangesAsync();
+    var identity=new MemberIdentity{GymId=gym.Id,MemberId=member.Id,Email=email,PasswordHash=""};
+    identity.PasswordHash=hasher.HashPassword(identity,input.Password);
+    db.MemberIdentities.Add(identity);
+    await db.SaveChangesAsync();
+    await tx.CommitAsync();
+    return Results.Ok(new{token=Token(identity,config),member=new{member.Id,member.FullName,member.Email}});
+   }
+   catch(DbUpdateException ex) when(ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }) {
+    await tx.RollbackAsync();
+    return Results.Conflict(new{message="Esta cuenta ya está registrada en el gimnasio."});
+   }
+   catch(DbUpdateException) {
+    await tx.RollbackAsync();
+    return Results.Problem(title="No fue posible guardar la cuenta. Contactá al administrador.",statusCode:500);
+   }
   });
   app.MapPost("/api/public/gyms/{slug}/login",async(string slug,MemberLogin input,GymDbContext db,IConfiguration config,IPasswordHasher<MemberIdentity> hasher)=>{
    var gym=await db.Gyms.AsNoTracking().SingleOrDefaultAsync(g=>g.Slug==slug&&g.IsActive);
