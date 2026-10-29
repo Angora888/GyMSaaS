@@ -59,7 +59,7 @@ public static class GymPortalEndpoints {
    if(gym is null)return Results.NotFound();
    var identity=await db.MemberIdentities.AsNoTracking().SingleOrDefaultAsync(x=>x.GymId==gym.Id&&x.Email==input.Email.Trim().ToLowerInvariant());
    if(identity is null||hasher.VerifyHashedPassword(identity,identity.PasswordHash,input.Password)==PasswordVerificationResult.Failed)return Results.Unauthorized();
-   return Results.Ok(new{token=Token(identity,config)});
+   return Results.Ok(new{token=MemberToken(identity,config)});
   }).RequireRateLimiting("auth-ip");
   app.MapGet("/api/member/me",async(ClaimsPrincipal user,GymDbContext db)=>{
    if(!Guid.TryParse(user.FindFirstValue("gym_id"),out var gym)||!Guid.TryParse(user.FindFirstValue("member_id"),out var memberId))return Results.Unauthorized();
