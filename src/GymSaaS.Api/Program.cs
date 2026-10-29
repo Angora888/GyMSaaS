@@ -26,7 +26,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
  IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),ClockSkew=TimeSpan.FromSeconds(30)
 });
 builder.Services.AddAuthorization();
-builder.Services.AddCors(o=>o.AddPolicy("Frontend",p=>p.WithOrigins(builder.Configuration.GetSection("FrontendOrigins").Get<string[]>()??["http://localhost:5173"]).AllowAnyHeader().AllowAnyMethod()));
+builder.Services.AddCors(o=>o.AddPolicy("Frontend",p=>p.WithOrigins(builder.Configuration.GetSection("FrontendOrigins").Get<string[]>()??["http://localhost:5173","https://gymsaascr.vercel.app"]).AllowAnyHeader().AllowAnyMethod()));
 var app=builder.Build();
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
