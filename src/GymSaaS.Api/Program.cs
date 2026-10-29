@@ -1,3 +1,4 @@
+using GymSaaS.Api.Attendance;
 using GymSaaS.Api.Members;
 using GymSaaS.Api.Email;
 using System.Threading.RateLimiting;
@@ -78,6 +79,7 @@ app.MapGet("/api/auth/gym",async(ClaimsPrincipal principal,GymDbContext db)=>{
 }).RequireAuthorization(p=>p.RequireRole("Owner"));
 app.MapMemberEndpoints();
 app.MapMembershipEndpoints();
+app.MapAttendanceEndpoints();
 app.MapGymPortal();
 app.MapGoogleMember();
 app.MapGoogleOwner();
