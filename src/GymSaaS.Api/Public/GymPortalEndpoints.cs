@@ -51,7 +51,7 @@ public static class GymPortalEndpoints {
    }
    catch(DbUpdateException) {
     await tx.RollbackAsync();
-    return Results.Problem(title="No fue posible guardar la cuenta. Contactá al administrador.",statusCode:500);
+    return Results.Problem(title: "No fue posible guardar la cuenta. Contactá al administrador.", statusCode: 500);
    }
   });
   app.MapPost("/api/public/gyms/{slug}/login",async(string slug,MemberLogin input,GymDbContext db,IConfiguration config,IPasswordHasher<MemberIdentity> hasher)=>{
