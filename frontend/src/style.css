@@ -27,3 +27,24 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .authDivider::before{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px solid #493039}
 .authDivider span{position:relative;background:#19191c;padding:0 12px}
 @media(max-width:480px){.portalBox{padding:24px 20px}.googleLogin>div{max-width:100%}}
+
+
+/* Member dashboard: independent responsive mobile experience */
+.memberHome{min-height:100vh;background:#09090b;color:#f7f7f8;padding:24px 16px 110px}
+.mhLayout{max-width:650px;margin:auto}
+.mhTop{display:flex;justify-content:space-between;align-items:start;gap:15px;margin:14px 0 30px}
+.mhTop small{color:#ff707e;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.mhTop h1{font-size:clamp(27px,7vw,40px);margin:8px 0}.mhTop h1 span{color:#f14055}
+.mhTop p,.mhCard p{color:#aeb0b9;line-height:1.5}.mhTop p{margin:0}
+.mhLogout{border:1px solid #51313a;border-radius:12px;background:#202024;color:#eee;padding:10px}
+.mhHero{display:flex;align-items:center;gap:18px;padding:24px 20px;background:linear-gradient(115deg,#be1832,#f34658);border-radius:22px;margin-bottom:20px}
+.mhHeroIcon{font-size:36px;line-height:1}.mhHero strong{font-size:22px}.mhHero p{margin:7px 0 0;font-size:13px;color:#fff2f3}
+.mhCard{background:#1d1e23;border:1px solid #3c3037;padding:22px;border-radius:21px;margin-bottom:18px;box-shadow:0 10px 25px #0002}
+.mhCard h2{font-size:21px;margin:0 0 18px}.mhDays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.mhDays>div{display:flex;flex-direction:column;align-items:center;gap:12px}.mhDays small{color:#a8a7b1}
+.mhDays span{display:grid;place-items:center;width:min(100%,47px);aspect-ratio:1;border:2px solid #414047;border-radius:50%;color:#a5a5b1;font-size:14px}
+.mhDays span.mhAttended{background:#d5223e;border-color:#d5223e;color:#fff}
+.mhHint{font-size:12px}.mhStatus{display:inline-block;background:#4b2630;color:#ff8791;padding:8px 15px;border-radius:30px}.mhBig{font-size:24px}
+.mhNav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:8px;background:#19191e;border-top:1px solid #493038;padding:10px 12px max(15px,env(safe-area-inset-bottom))}
+.mhNav button{flex:1;max-width:210px;padding:13px 8px;border:0;border-radius:14px;background:transparent;color:#adb0ba;font-weight:700}
+.mhNav button.active{background:#e63047;color:white}
