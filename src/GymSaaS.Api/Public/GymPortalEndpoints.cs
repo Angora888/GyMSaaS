@@ -13,7 +13,7 @@ namespace GymSaaS.Api.Public;
 public sealed record MemberSignup([property:Required,MinLength(2),MaxLength(150)] string FullName,[property:Required,EmailAddress] string Email,[property:Required,MinLength(12)] string Password);
 public sealed record MemberLogin([property:Required,EmailAddress] string Email,[property:Required] string Password);
 public static class GymPortalEndpoints {
- static object Token(MemberIdentity identity,IConfiguration config){
+ public static object MemberToken(MemberIdentity identity,IConfiguration config){
   var key=config["Jwt:Key"]??throw new InvalidOperationException("JWT key missing");
   var claims=new[]{new Claim(JwtRegisteredClaimNames.Sub,identity.Id.ToString()),new Claim("gym_id",identity.GymId.ToString()),new Claim("member_id",identity.MemberId.ToString()),new Claim(ClaimTypes.Role,"Member")};
   var jwt=new JwtSecurityToken(issuer:config["Jwt:Issuer"]??"GymSaaS",audience:config["Jwt:Audience"]??"GymSaaS.Client",claims:claims,expires:DateTime.UtcNow.AddHours(4),signingCredentials:new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),SecurityAlgorithms.HmacSha256));
@@ -43,7 +43,7 @@ public static class GymPortalEndpoints {
     db.MemberIdentities.Add(identity);
     await db.SaveChangesAsync();
     await tx.CommitAsync();
-    return Results.Ok(new{token=Token(identity,config),member=new{member.Id,member.FullName,member.Email}});
+    return Results.Ok(new{token=MemberToken(identity,config),member=new{member.Id,member.FullName,member.Email}});
    }
    catch(DbUpdateException ex) when(ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }) {
     await tx.RollbackAsync();
