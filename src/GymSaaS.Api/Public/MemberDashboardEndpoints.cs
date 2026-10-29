@@ -28,7 +28,7 @@ public static class MemberDashboardEndpoints {
    return Results.Ok(new{
     member,gym,
     membership=subscription is null?null:new {subscription.plan,subscription.startDate,subscription.endDate,subscription.price,subscription.currency,
-      status=subscription.StartDate<=today&&subscription.EndDate>=today?"active":subscription.EndDate<today?"expired":"upcoming"},
+      status=subscription.startDate<=today&&subscription.endDate>=today?"active":subscription.endDate<today?"expired":"upcoming"},
     attendance=attendance.Select(x=>x.ToString("O")).ToArray(),routine
    });
   }).RequireAuthorization(p=>p.RequireRole("Member"));
