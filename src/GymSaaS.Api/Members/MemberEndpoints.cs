@@ -5,9 +5,9 @@ using GymSaaS.Api.Models;
 using Microsoft.EntityFrameworkCore;
 namespace GymSaaS.Api.Members;
 public sealed record MemberInput(
- [Required, MinLength(2), MaxLength(150)] string FullName,
- [EmailAddress, MaxLength(250)] string? Email,
- [MaxLength(40)] string? Phone);
+ [property: Required, MinLength(2), MaxLength(150)] string FullName,
+ [property: EmailAddress, MaxLength(250)] string? Email,
+ [property: MaxLength(40)] string? Phone);
 public static class MemberEndpoints {
  public static IEndpointRouteBuilder MapMemberEndpoints(this IEndpointRouteBuilder app) {
   var group=app.MapGroup("/api/members").RequireAuthorization(policy=>policy.RequireRole("Owner"));
