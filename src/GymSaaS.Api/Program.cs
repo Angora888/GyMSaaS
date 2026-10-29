@@ -80,6 +80,7 @@ app.MapMemberEndpoints();
 app.MapGymPortal();
 app.MapGoogleMember();
 app.MapGoogleOwner();
+app.MapMemberDashboard();
 app.Run();
 
 public sealed class ValidationFilter<T>:IEndpointFilter {
