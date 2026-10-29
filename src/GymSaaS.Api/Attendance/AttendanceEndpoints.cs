@@ -5,7 +5,7 @@ using GymSaaS.Api.Data;
 using GymSaaS.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GymSaaS.Api.Attendance;
+namespace GymSaaS.Api.CheckIn;
 public sealed record CheckinRequest(string Code);
 public static class AttendanceEndpoints {
  const int SlotSeconds=30;
