@@ -128,3 +128,40 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
  .layout aside .brand{font-size:15px}
  .layout main{padding-left:13px;padding-right:13px}
 }
+
+
+/* Admin mobile app shell: fixed bottom navigation and truly fluid viewport */
+.adminMobileNav{display:none}
+.adminSettingsTop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.adminSettingsTop h2{margin:0}
+@media(max-width:750px){
+ html,body,#root{margin:0;width:100%;max-width:100%;min-width:0;overflow-x:hidden}
+ .layout{display:block!important;position:relative;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden}
+ .layout aside{display:flex!important;overflow:hidden!important;width:100%!important;max-width:100%!important;min-width:0!important;padding:16px!important;justify-content:flex-start;box-sizing:border-box}
+ .layout aside .brand{position:static!important;font-size:23px!important;width:auto!important;padding:0!important}
+ .layout aside .navitem,.layout aside .small{display:none!important}
+ .layout main{display:block;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box;padding:22px 16px calc(115px + env(safe-area-inset-bottom,0px))!important;margin:0!important;overflow:hidden}
+ .layout main > *{min-width:0;max-width:100%}
+ .layout header{width:100%;min-width:0;max-width:100%;gap:12px;margin-bottom:25px}
+ .layout header h1{font-size:clamp(26px,7vw,37px);overflow-wrap:anywhere}
+ .layout header .avatar{flex-shrink:0}
+ .layout .metrics{display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100%;max-width:100%;gap:13px}
+ .layout .metrics .panel{width:100%;min-width:0;max-width:100%;overflow-wrap:anywhere;padding:20px 18px}
+ .layout .metrics .panel strong{font-size:33px}
+ .layout .panel{width:100%;min-width:0;max-width:100%;overflow-wrap:anywhere}
+ .layout .membershipLayout{grid-template-columns:minmax(0,1fr)!important;width:100%;max-width:100%}
+ .layout .membershipForm{grid-template-columns:minmax(0,1fr)!important}
+ .layout .memberlist,.layout .member,.layout .memberhead,.layout .receptionPanel{max-width:100%;min-width:0}
+ .layout .memberhead{flex-wrap:wrap}
+ .layout .member{flex-wrap:wrap}
+ .layout input,.layout select,.layout textarea{max-width:100%;min-width:0}
+ .adminMobileNav{position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;z-index:100;left:0;right:0;bottom:0;width:100%;max-width:100%;padding:9px 7px calc(9px + env(safe-area-inset-bottom,0px));background:#1a1b21;border-top:1px solid #49323b;box-shadow:0 -8px 28px #0008}
+ .adminMobileNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:58px;padding:7px 2px;border:0;background:transparent;color:#a7a7b3;border-radius:13px;font:inherit}
+ .adminMobileNav button span{font-size:23px;line-height:1}
+ .adminMobileNav button small{font-size:clamp(10px,2.5vw,12px);font-weight:650;white-space:nowrap}
+ .adminMobileNav button.active{background:#be263f;color:#fff}
+}
+@media(max-width:390px){
+ .layout main{padding-left:13px!important;padding-right:13px!important}
+ .layout .metrics{grid-template-columns:minmax(0,1fr)!important}
+}
