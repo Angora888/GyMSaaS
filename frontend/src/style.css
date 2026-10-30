@@ -290,3 +290,8 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .trainerPortal .panel{min-width:0}.trainerPortal input,.trainerPortal select,.trainerPortal textarea{width:100%;min-width:0}
 .trainerPortal .coachDay{max-width:100%}.trainerPortal .trainerForm{display:grid;gap:12px}
 @media(max-width:620px){.trainerPortal{padding:18px 12px 60px}.trainerPortalHeader h1{font-size:26px}}
+
+/* Trainer assigned routine edit action */
+.trainerProgramRow{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #4a323c;padding:12px 0;flex-wrap:wrap}
+.trainerProgramRow .secondary{margin:0}
+.trainerRoutineEditor{scroll-margin-top:24px}
