@@ -237,3 +237,13 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .strengthHistory>div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #40303a;padding:10px 0}
 .strengthEmpty{padding:16px;border:1px dashed #694451;border-radius:12px}
 @media(max-width:390px){.strengthMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.strengthMetrics>div:last-child{grid-column:1/-1}}
+
+
+/* Owner exercise catalog and structured assignments */
+.catalogPanel{margin-bottom:26px}.catalogUpload{display:block;text-align:center;cursor:pointer;padding:14px;border-radius:12px;margin:15px 0}.catalogUpload input{display:none}
+.catalogGroup{border:1px solid #493039;border-radius:12px;padding:12px 15px;margin:9px 0;background:#131418}.catalogGroup summary{cursor:pointer;color:#ff8794;font-weight:800}
+.catalogItem{padding:10px 0;border-bottom:1px solid #31252a;display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px}.catalogItem small{color:#b6a7ad}
+.catalogDivider{margin:28px 0;border:0;border-top:1px solid #493039}
+.coachDay{background:#131419;border:1px solid #523640;border-radius:16px;padding:15px;margin:17px 0}.coachDay select{display:block;width:100%;min-width:0;padding:12px;background:#101013;border:1px solid #554047;color:white;border-radius:11px;margin-top:8px}
+.coachDay .workoutRow input{min-width:0;flex:1}.coachExercise{border:1px solid #44313a;border-radius:12px;margin-top:12px;padding:12px;background:#1d1b21}.coachExercise>strong{font-size:14px}
+.workoutExerciseCategory{display:inline-block;padding:5px 10px;border-radius:18px;background:#4b202e;color:#ff9dad;font-size:12px;font-weight:800;margin-bottom:8px}
