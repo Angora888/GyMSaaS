@@ -24,6 +24,8 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
   b.Entity<Member>().HasIndex(x=>new{x.GymId,x.Email});
   b.Entity<Attendance>().HasIndex(x=>new{x.GymId,x.MemberId,x.CheckedInAt});
   b.Entity<MembershipPlan>().Property(x=>x.Price).HasPrecision(12,2);
+  b.Entity<Member>().Property(x=>x.WeightKg).HasPrecision(6,2);
+  b.Entity<Member>().Property(x=>x.HeightCm).HasPrecision(5,1);
   foreach(var type in new[]{typeof(Member),typeof(MembershipPlan),typeof(MemberSubscription),typeof(Attendance),typeof(Trainer),typeof(WorkoutRoutine)})
    b.Entity(type).HasIndex("GymId");
  }
