@@ -314,3 +314,10 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .memberTrend h4{margin:0 0 12px}
 
 .overviewAttendance{margin-bottom:18px}.attendanceInsightMetric{display:flex;align-items:center;gap:16px;padding:14px 0}.attendanceInsightMetric strong{font-size:32px;color:#f4a1b2}.attendanceInsightMetric span{max-width:340px}.overviewAttendance .billingRow .secondary{margin:0}
+
+/* Member: training right now */
+.mhTrainingNow{border-color:rgba(79,156,206,.4)}
+.mhTrainingNowRow{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.mhTrainingNowRow h2{margin:0}
+.mhTrainingNowRow strong{color:#58b0e6;font-size:clamp(29px,6vw,42px);font-weight:800}
+.mhTrainingNow p{margin:9px 0 0;color:#9aa5b6;font-size:14px}
