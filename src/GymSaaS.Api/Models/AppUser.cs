@@ -8,5 +8,6 @@ public sealed class AppUser {
  public required string PasswordHash {get;set;}
  public string FullName {get;set;}="";
  public string Role {get;set;}="Owner";
+ public int SessionVersion {get;set;}=0;
  public DateTimeOffset CreatedAt {get;set;}=DateTimeOffset.UtcNow;
 }
