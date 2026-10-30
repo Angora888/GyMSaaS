@@ -1,7 +1,8 @@
+import MeasurementHistory from './MeasurementHistory.jsx';
 import React,{useEffect,useState} from 'react';
 const API=(import.meta.env.VITE_API_URL||'').replace(/\/$/,'');
 export default function MemberHome({token,onLogout}){
- const [data,setData]=useState(null),[error,setError]=useState(''),[tab,setTab]=useState('inicio'),[checkinStatus,setCheckinStatus]=useState(''),[editingProfile,setEditingProfile]=useState(false),[profileForm,setProfileForm]=useState({phone:'',emergencyPhone:'',weightKg:'',heightCm:''}),[profileNotice,setProfileNotice]=useState(''),[savingProfile,setSavingProfile]=useState(false);
+ const [data,setData]=useState(null),[error,setError]=useState(''),[tab,setTab]=useState('inicio'),[checkinStatus,setCheckinStatus]=useState(''),[editingProfile,setEditingProfile]=useState(false),[profileForm,setProfileForm]=useState({phone:'',emergencyPhone:'',weightKg:'',heightCm:''}),[profileNotice,setProfileNotice]=useState(''),[savingProfile,setSavingProfile]=useState(false),[measurementRevision,setMeasurementRevision]=useState(0);
  useEffect(()=>{let active=true;fetch(API+'/api/member/dashboard',{headers:{Authorization:'Bearer '+token}})
   .then(async r=>{if(!r.ok)throw Error(r.status===401?'Tu sesión venció. Ingresá de nuevo.':'No se pudo cargar tu información.');return r.json()})
   .then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[token]);
@@ -28,7 +29,7 @@ export default function MemberHome({token,onLogout}){
   const payload={phone:profileForm.phone,emergencyPhone:profileForm.emergencyPhone,weightKg:profileForm.weightKg===''?null:Number(profileForm.weightKg),heightCm:profileForm.heightCm===''?null:Number(profileForm.heightCm)};
   const r=await fetch(API+'/api/member/profile',{method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(payload)});
   const result=await r.json().catch(()=>({}));if(!r.ok)throw Error(result.message||'No se pudo guardar el perfil.');
-  setData(old=>({...old,member:{...old.member,...result}}));setEditingProfile(false);setProfileNotice('¡Perfil actualizado!');
+  setData(old=>({...old,member:{...old.member,...result}}));setEditingProfile(false);setProfileNotice('¡Perfil actualizado!');setMeasurementRevision(n=>n+1);
  }catch(e){setProfileNotice(e.message)}finally{setSavingProfile(false)}}
  if(error)return <div className="memberHome"><div className="mhCard"><p role="alert">{error}</p><button className="secondary" onClick={onLogout}>Volver al login</button></div></div>;
  if(!data)return <div className="memberHome"><div className="mhCard">Cargando tu gimnasio…</div></div>;
@@ -52,7 +53,7 @@ export default function MemberHome({token,onLogout}){
  <div className="mhProfileGrid"><div><small>Teléfono</small><strong>{data.member.phone||'Sin registrar'}</strong></div><div><small>Emergencias</small><strong>{data.member.emergencyPhone||'Sin registrar'}</strong></div><div><small>Peso</small><strong>{data.member.weightKg!=null?data.member.weightKg+' kg':'Sin registrar'}</strong></div><div><small>Estatura</small><strong>{data.member.heightCm!=null?data.member.heightCm+' cm':'Sin registrar'}</strong></div></div>
  <div className="mhBmi"><span>Índice de masa corporal (IMC)</span><strong>{data.member.weightKg>0&&data.member.heightCm>0?(data.member.weightKg/Math.pow(data.member.heightCm/100,2)).toFixed(1):'—'}</strong><small>Es una medida orientativa, no un diagnóstico ni una valoración de salud individual.</small></div>
  <button className="primary" onClick={editProfile}>Editar mi perfil</button></>}
- <button className="secondary mhSignout" onClick={onLogout}>Cerrar sesión</button></div>}
+ <button className="secondary mhSignout" onClick={onLogout}>Cerrar sesión</button></div>}{tab==='perfil'&&<MeasurementHistory token={token} revision={measurementRevision}/> }
   <nav className="mhNav"><button className={tab==='inicio'?'active':''} onClick={()=>setTab('inicio')}>⌂ Inicio</button><button className={tab==='rutinas'?'active':''} onClick={()=>setTab('rutinas')}>▤ Rutinas</button><button className={tab==='perfil'?'active':''} onClick={()=>setTab('perfil')}>◉ Perfil</button></nav>
  </div></div>;
 }
