@@ -78,6 +78,7 @@ app.MapGet("/api/auth/gym",async(ClaimsPrincipal principal,GymDbContext db)=>{
  return gym is null?Results.NotFound():Results.Ok(gym);
 }).RequireAuthorization(p=>p.RequireRole("Owner"));
 app.MapMemberEndpoints();
+app.MapMemberCoaching();
 app.MapMembershipEndpoints();
 app.MapAttendanceEndpoints();
 app.MapGymPortal();
