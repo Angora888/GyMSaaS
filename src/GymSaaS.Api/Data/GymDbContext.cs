@@ -8,6 +8,7 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
  public DbSet<Member> Members=>Set<Member>();
  public DbSet<MemberMeasurement> MemberMeasurements=>Set<MemberMeasurement>();
  public DbSet<MembershipPlan> Plans=>Set<MembershipPlan>();
+ public DbSet<MembershipPayment> MembershipPayments=>Set<MembershipPayment>();
  public DbSet<MemberSubscription> Subscriptions=>Set<MemberSubscription>();
  public DbSet<Attendance> Attendances=>Set<Attendance>();
  public DbSet<Trainer> Trainers=>Set<Trainer>();
@@ -33,6 +34,8 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
   b.Entity<MemberIdentity>().HasOne<Member>().WithMany().HasForeignKey(x=>new{x.GymId,x.MemberId}).HasPrincipalKey(m=>new{m.GymId,m.Id}).OnDelete(DeleteBehavior.Restrict);
   b.Entity<Member>().HasIndex(x=>new{x.GymId,x.Email});
   b.Entity<Attendance>().HasIndex(x=>new{x.GymId,x.MemberId,x.CheckedInAt});
+  b.Entity<MembershipPayment>().Property(x=>x.Amount).HasPrecision(12,2);
+  b.Entity<MembershipPayment>().HasIndex(x=>new{x.GymId,x.SubscriptionId,x.PaidAt});
   b.Entity<MembershipPlan>().Property(x=>x.Price).HasPrecision(12,2);
   b.Entity<Member>().Property(x=>x.WeightKg).HasPrecision(6,2);
   b.Entity<Member>().Property(x=>x.HeightCm).HasPrecision(5,1);
