@@ -23,6 +23,15 @@ public static class TrainerPortalEndpoints{
    try{await db.SaveChangesAsync();}catch(DbUpdateException){return Results.Conflict(new{message="El correo ya está registrado."});}
    return Results.Ok(new{userId=user.Id,user.Email,trainerId=trainer.Id,trainer.Name});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
+  app.MapPut("/api/admin/trainers/{trainerId:guid}/password",async(Guid trainerId,TrainerAccountInput input,ClaimsPrincipal principal,GymDbContext db,IPasswordHasher<AppUser> hasher)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
+   if(input.Password is null||input.Password.Length<12||input.Password.Length>128)return Results.BadRequest(new{message="La nueva contraseña debe tener entre 12 y 128 caracteres."});
+   var user=await db.Users.SingleOrDefaultAsync(u=>u.GymId==gym&&u.TrainerId==trainerId&&u.Role=="Trainer");
+   if(user is null)return Results.NotFound(new{message="Este entrenador todavía no tiene cuenta de acceso."});
+   user.PasswordHash=hasher.HashPassword(user,input.Password);
+   await db.SaveChangesAsync();
+   return Results.Ok(new{message="Contraseña actualizada correctamente."});
+  }).RequireAuthorization(p=>p.RequireRole("Owner"));
   var group=app.MapGroup("/api/trainer").RequireAuthorization(p=>p.RequireRole("Trainer"));
   group.MapGet("/overview",async(ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym)||!Guid.TryParse((principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value??principal.FindFirst(ClaimTypes.NameIdentifier)?.Value),out var uid))return Results.Unauthorized();
