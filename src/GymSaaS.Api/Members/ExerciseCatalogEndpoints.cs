@@ -13,6 +13,13 @@ public static class ExerciseCatalogEndpoints {
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
    return Results.Ok(await db.ExerciseCatalogItems.AsNoTracking().Where(x=>x.GymId==gym).OrderBy(x=>x.Category).ThenBy(x=>x.Name).Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes}).ToListAsync());
   });
+  app.MapGet("/api/member/exercise-catalog",async(ClaimsPrincipal principal,GymDbContext db)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gymId)||!Guid.TryParse(principal.FindFirst("member_id")?.Value,out var memberId))return Results.Unauthorized();
+   if(!await db.Members.AnyAsync(m=>m.Id==memberId&&m.GymId==gymId))return Results.Unauthorized();
+   return Results.Ok(await db.ExerciseCatalogItems.AsNoTracking().Where(x=>x.GymId==gymId)
+    .OrderBy(x=>x.Category).ThenBy(x=>x.Name)
+    .Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes}).ToListAsync());
+  }).RequireAuthorization(p=>p.RequireRole("Member"));
   group.MapPost("/import",async(CatalogImport input,ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
    if(input.Exercises is null||input.Exercises.Count is <1 or >500)return Results.BadRequest(new{message="El catálogo debe contener entre 1 y 500 ejercicios."});
