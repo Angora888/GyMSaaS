@@ -13,6 +13,9 @@ public sealed class Member {
     public required string FullName { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    public string? EmergencyPhone { get; set; }
+    public decimal? WeightKg { get; set; }
+    public decimal? HeightCm { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 public sealed class MembershipPlan {
