@@ -11,7 +11,7 @@ public static class MemberProfileEndpoints{
    var subscriptions=await (from s in db.Subscriptions.AsNoTracking() join p in db.Plans.AsNoTracking() on new{s.GymId,Id=s.PlanId} equals new{p.GymId,p.Id}
     where s.GymId==gym&&s.MemberId==memberId orderby s.EndDate descending
     select new{s.Id,plan=p.Name,p.Price,p.Currency,s.StartDate,s.EndDate}).ToListAsync();
-   var payments=await db.MembershipPayments.AsNoTracking().Where(x=>x.GymId==gym&&subscriptions.Select(s=>s.Id).Contains(x.SubscriptionId)).OrderByDescending(x=>x.PaidAt)
+   var payments=await db.MembershipPayments.AsNoTracking().Where(x=>x.GymId==gym&&db.Subscriptions.Any(s=>s.Id==x.SubscriptionId&&s.GymId==gym&&s.MemberId==memberId)).OrderByDescending(x=>x.PaidAt)
     .Select(x=>new{x.Id,x.SubscriptionId,x.Amount,x.Currency,x.Method,x.PaidAt}).ToListAsync();
    var trainers=await (from tm in db.TrainerMembers.AsNoTracking() join t in db.Trainers.AsNoTracking() on tm.TrainerId equals t.Id
     where tm.GymId==gym&&tm.MemberId==memberId&&t.GymId==gym select new{t.Id,t.Name}).ToListAsync();
