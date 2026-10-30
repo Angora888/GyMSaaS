@@ -3,7 +3,7 @@ import MeasurementHistory from './MeasurementHistory.jsx';
 import React,{useEffect,useState} from 'react';
 const API=(import.meta.env.VITE_API_URL||'').replace(/\/$/,'');
 export default function MemberHome({token,onLogout}){
- const [data,setData]=useState(null),[error,setError]=useState(''),[tab,setTab]=useState('inicio'),[checkinStatus,setCheckinStatus]=useState(''),[editingProfile,setEditingProfile]=useState(false),[profileForm,setProfileForm]=useState({phone:'',emergencyPhone:'',weightKg:'',heightCm:''}),[profileNotice,setProfileNotice]=useState(''),[savingProfile,setSavingProfile]=useState(false),[measurementRevision,setMeasurementRevision]=useState(0);
+ const [checkingOut,setCheckingOut]=useState(false),[data,setData]=useState(null),[error,setError]=useState(''),[tab,setTab]=useState('inicio'),[checkinStatus,setCheckinStatus]=useState(''),[editingProfile,setEditingProfile]=useState(false),[profileForm,setProfileForm]=useState({phone:'',emergencyPhone:'',weightKg:'',heightCm:''}),[profileNotice,setProfileNotice]=useState(''),[savingProfile,setSavingProfile]=useState(false),[measurementRevision,setMeasurementRevision]=useState(0);
  useEffect(()=>{let active=true;fetch(API+'/api/member/dashboard',{headers:{Authorization:'Bearer '+token}})
   .then(async r=>{if(!r.ok)throw Error(r.status===401?'Tu sesión venció. Ingresá de nuevo.':'No se pudo cargar tu información.');return r.json()})
   .then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[token]);
@@ -33,6 +33,13 @@ export default function MemberHome({token,onLogout}){
   }
   checkin();return()=>{cancelled=true};
  },[token]);
+ async function checkout(){setCheckingOut(true);setCheckinStatus('');try{
+ const r=await fetch(API+'/api/member/checkout',{method:'POST',headers:{Authorization:'Bearer '+token}});
+ const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||'No se pudo registrar la salida.');
+ setCheckinStatus(d.message||'Salida registrada.');
+ const response=await fetch(API+'/api/member/dashboard',{headers:{Authorization:'Bearer '+token}});
+ if(response.ok)setData(await response.json());
+ }catch(e){setCheckinStatus(e.message)}finally{setCheckingOut(false)}}
  function editProfile(){setProfileForm({phone:data.member.phone||'',emergencyPhone:data.member.emergencyPhone||'',weightKg:data.member.weightKg??'',heightCm:data.member.heightCm??''});setProfileNotice('');setEditingProfile(true)}
  async function saveProfile(e){e.preventDefault();setSavingProfile(true);setProfileNotice('');try{
   const payload={phone:profileForm.phone,emergencyPhone:profileForm.emergencyPhone,weightKg:profileForm.weightKg===''?null:Number(profileForm.weightKg),heightCm:profileForm.heightCm===''?null:Number(profileForm.heightCm)};
@@ -50,7 +57,7 @@ export default function MemberHome({token,onLogout}){
   {checkinStatus&&<div className="mhCard" role="status"><strong>{checkinStatus}</strong></div>}
   {tab==='inicio'?<><div className="mhHero"><span className="mhHeroIcon">▦</span><div><strong>Tu asistencia</strong><p>Para registrar tu entrada, escaneá el QR temporal de recepción con la cámara de tu celular.</p></div></div>
    <div className="mhCard"><h2>✓ Asistencia semanal</h2><div className="mhDays">{days.map((d,i)=>{const key=d.toLocaleDateString('en-CA');return <div key={i}><small>{['D','L','M','M','J','V','S'][i]}</small><span className={attended.has(key)?'mhAttended':''}>{attended.has(key)?'✓':d.getDate()}</span></div>})}</div><p className="mhHint">Asistencias registradas en el sistema durante los últimos 14 días.</p></div>
-   <div className="mhCard mhTrainingNow"><div className="mhTrainingNowRow"><h2>♟ Entrenando ahora</h2><strong>{data.trainingNow??0}</strong></div><p>Miembros con una sesión de entrenamiento iniciada recientemente y todavía sin finalizar.</p></div>
+   <div className="mhCard mhTrainingNow"><div className="mhTrainingNowRow"><h2>♟ Entrenando ahora</h2><strong>{data.trainingNow??0}</strong></div><p>Miembros con entrada por QR en las últimas dos horas y sin salida registrada.</p>{data.insideNow&&<button type="button" className="secondary" disabled={checkingOut} onClick={checkout}>{checkingOut?"Registrando salida…":"Salir del gimnasio"}</button>}</div>
    <div className="mhCard"><h2>▤ Membresía</h2>{current?<><strong className="mhBig">{current.plan}</strong><p>{current.status==='active'?'Activa':current.status==='expired'?'Vencida':'Próxima'} · Hasta {current.endDate}</p></>:<><strong className="mhStatus">Sin plan</strong><p>Tu gimnasio todavía no te ha asignado una membresía.</p></>}</div>
    <div className="mhCard"><h2>🔥 Rutina activa</h2>{data.personalProgram?<><strong>{data.personalProgram.name}</strong><p>{data.personalProgram.description||'Tu entrenamiento está listo.'}</p><button className="secondary" onClick={()=>setTab('rutinas')}>Ver rutina →</button></>:data.routine?<><strong>{data.routine.name}</strong><p>{data.routine.description||'Tu rutina está asignada.'}</p><button className="secondary" onClick={()=>setTab('rutinas')}>Ir a mis rutinas →</button></>:<><p>No tenés una rutina activa todavía.</p><button className="secondary" onClick={()=>setTab('rutinas')}>Crear rutina →</button></>}</div></>:tab==='rutinas'?<MemberWorkouts token={token}/> :<div className="mhCard"><h2>Mi perfil</h2><p><strong>{data.member.fullName}</strong></p><p>{data.member.email}</p><p>{data.gym.name}</p>
  {profileNotice&&<p role="status">{profileNotice}</p>}
