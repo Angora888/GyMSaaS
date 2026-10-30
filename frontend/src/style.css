@@ -275,3 +275,10 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .billingRow>div:last-child{text-align:right}
 .overviewRevenue{margin-bottom:18px}
 @media(max-width:750px){.billingPanel{min-width:0}.billingRow>div:last-child{text-align:left}.billingSummary{display:block}.billingSummary>div{margin-bottom:12px}}
+
+/* Receivables filters and quick actions */
+.billingFilters{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,220px);gap:10px;margin:12px 0}
+.billingFilters input,.billingFilters select{min-width:0;width:100%;padding:12px;background:#17151a;color:#fff;border:1px solid #59414a;border-radius:12px}
+.billingRowActions{display:flex;flex-direction:column;gap:7px;align-items:flex-end}
+.billingRowActions .secondary{min-width:128px;margin:0}
+@media(max-width:650px){.billingFilters{grid-template-columns:1fr}.billingRowActions{align-items:flex-start}}
