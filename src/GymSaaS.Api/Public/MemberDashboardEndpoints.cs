@@ -26,10 +26,11 @@ public static class MemberDashboardEndpoints {
    var routine=await db.Routines.AsNoTracking().Where(x=>x.GymId==gymId&&x.MemberId==memberId)
      .OrderBy(x=>x.Name).Select(x=>new{x.Id,x.Name,x.Description}).FirstOrDefaultAsync();
    var personalProgram=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gymId&&x.MemberId==memberId&&x.IsActive).OrderByDescending(x=>x.CreatedAt).Select(x=>new{x.Id,x.Name,x.Description}).FirstOrDefaultAsync();
-   var activeSince=DateTimeOffset.UtcNow.AddHours(-3);
-   var trainingNow=await db.MemberWorkoutSessions.AsNoTracking().Where(s=>s.GymId==gymId&&s.FinishedAt==null&&s.StartedAt>=activeSince).Select(s=>s.MemberId).Distinct().CountAsync();
+   var cutoff=DateTimeOffset.UtcNow.AddHours(-2);
+   var trainingNow=await db.Attendances.AsNoTracking().Where(a=>a.GymId==gymId&&a.CheckedInAt>=cutoff&&a.CheckedOutAt==null).Select(a=>a.MemberId).Distinct().CountAsync();
+   var insideNow=await db.Attendances.AsNoTracking().AnyAsync(a=>a.GymId==gymId&&a.MemberId==memberId&&a.CheckedInAt>=cutoff&&a.CheckedOutAt==null);
    return Results.Ok(new{
-    member,gym,personalProgram,trainingNow,
+    member,gym,personalProgram,trainingNow,insideNow,
     membership=subscription is null?null:new {subscription.plan,subscription.startDate,subscription.endDate,subscription.price,subscription.currency,
       status=subscription.startDate<=today&&subscription.endDate>=today?"active":subscription.endDate<today?"expired":"upcoming"},
     attendance=attendance.Select(x=>x.ToString("O")).ToArray(),routine
