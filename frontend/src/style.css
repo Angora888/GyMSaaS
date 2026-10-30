@@ -282,3 +282,11 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .billingRowActions{display:flex;flex-direction:column;gap:7px;align-items:flex-end}
 .billingRowActions .secondary{min-width:128px;margin:0}
 @media(max-width:650px){.billingFilters{grid-template-columns:1fr}.billingRowActions{align-items:flex-start}}
+
+/* Isolated trainer dashboard */
+.trainerPortal{max-width:1120px;margin:0 auto;padding:24px 18px 70px;display:grid;gap:18px}
+.trainerPortalHeader{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+.trainerPortalHeader h1{margin:7px 0}.trainerPortalHeader small{color:#ff7289;font-weight:800;letter-spacing:.1em}
+.trainerPortal .panel{min-width:0}.trainerPortal input,.trainerPortal select,.trainerPortal textarea{width:100%;min-width:0}
+.trainerPortal .coachDay{max-width:100%}.trainerPortal .trainerForm{display:grid;gap:12px}
+@media(max-width:620px){.trainerPortal{padding:18px 12px 60px}.trainerPortalHeader h1{font-size:26px}}
