@@ -1,3 +1,4 @@
+import MemberWorkouts from './MemberWorkouts.jsx';
 import MeasurementHistory from './MeasurementHistory.jsx';
 import React,{useEffect,useState} from 'react';
 const API=(import.meta.env.VITE_API_URL||'').replace(/\/$/,'');
@@ -42,7 +43,7 @@ export default function MemberHome({token,onLogout}){
   {tab==='inicio'?<><div className="mhHero"><span className="mhHeroIcon">▦</span><div><strong>Tu asistencia</strong><p>Para registrar tu entrada, escaneá el QR temporal de recepción con la cámara de tu celular.</p></div></div>
    <div className="mhCard"><h2>✓ Asistencia semanal</h2><div className="mhDays">{days.map((d,i)=>{const key=d.toLocaleDateString('en-CA');return <div key={i}><small>{['D','L','M','M','J','V','S'][i]}</small><span className={attended.has(key)?'mhAttended':''}>{attended.has(key)?'✓':d.getDate()}</span></div>})}</div><p className="mhHint">Asistencias registradas en el sistema durante los últimos 14 días.</p></div>
    <div className="mhCard"><h2>▤ Membresía</h2>{current?<><strong className="mhBig">{current.plan}</strong><p>{current.status==='active'?'Activa':current.status==='expired'?'Vencida':'Próxima'} · Hasta {current.endDate}</p></>:<><strong className="mhStatus">Sin plan</strong><p>Tu gimnasio todavía no te ha asignado una membresía.</p></>}</div>
-   <div className="mhCard"><h2>🔥 Rutina activa</h2>{data.routine?<><strong>{data.routine.name}</strong><p>{data.routine.description||'Tu rutina está asignada.'}</p></>:<p>No tenés una rutina asignada.</p>}</div></>:tab==='rutinas'?<div className="mhCard"><h2>Rutinas</h2>{data.routine?<><strong>{data.routine.name}</strong><p>{data.routine.description}</p></>:<p>Próximamente tu entrenador podrá asignarte una rutina.</p>}</div>:<div className="mhCard"><h2>Mi perfil</h2><p><strong>{data.member.fullName}</strong></p><p>{data.member.email}</p><p>{data.gym.name}</p>
+   <div className="mhCard"><h2>🔥 Rutina activa</h2>{data.routine?<><strong>{data.routine.name}</strong><p>{data.routine.description||'Tu rutina está asignada.'}</p></>:<p>No tenés una rutina asignada.</p>}</div></>:tab==='rutinas'?<MemberWorkouts token={token}/> :<div className="mhCard"><h2>Mi perfil</h2><p><strong>{data.member.fullName}</strong></p><p>{data.member.email}</p><p>{data.gym.name}</p>
  {profileNotice&&<p role="status">{profileNotice}</p>}
  {editingProfile?<form className="mhProfileForm" onSubmit={saveProfile}>
  <label>Teléfono personal<input type="tel" maxLength={40} value={profileForm.phone} onChange={e=>setProfileForm(f=>({...f,phone:e.target.value}))}/></label>
