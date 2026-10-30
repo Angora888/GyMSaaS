@@ -80,6 +80,7 @@ app.MapGet("/api/auth/gym",async(ClaimsPrincipal principal,GymDbContext db)=>{
 app.MapMemberEndpoints();
 app.MapMemberCoaching();
 app.MapTrainerEndpoints();
+app.MapOwnerDashboard();
 app.MapExerciseCatalog();
 app.MapMembershipEndpoints();
 app.MapAttendanceEndpoints();
