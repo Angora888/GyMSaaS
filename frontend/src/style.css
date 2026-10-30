@@ -247,3 +247,13 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .coachDay{background:#131419;border:1px solid #523640;border-radius:16px;padding:15px;margin:17px 0}.coachDay select{display:block;width:100%;min-width:0;padding:12px;background:#101013;border:1px solid #554047;color:white;border-radius:11px;margin-top:8px}
 .coachDay .workoutRow input{min-width:0;flex:1}.coachExercise{border:1px solid #44313a;border-radius:12px;margin-top:12px;padding:12px;background:#1d1b21}.coachExercise>strong{font-size:14px}
 .workoutExerciseCategory{display:inline-block;padding:5px 10px;border-radius:18px;background:#4b202e;color:#ff9dad;font-size:12px;font-weight:800;margin-bottom:8px}
+
+
+/* Read-only gym catalog picker inside the member workout editor */
+.workoutCatalogPicker{margin:18px 0;padding:16px;border:1px solid #653845;border-radius:16px;background:#19171c;display:grid;gap:11px;min-width:0}
+.workoutCatalogPicker h4{color:#ff8d9e;margin:0;font-size:16px}
+.workoutCatalogPicker label{margin:0;min-width:0}
+.workoutCatalogPicker select{display:block;width:100%;max-width:100%;min-width:0;margin-top:7px;padding:12px;background:#101013;border:1px solid #554047;color:white;border-radius:11px;font:inherit}
+.workoutCatalogPicker .secondary{width:100%;min-height:44px}
+.workoutCategoryInput{display:block;margin:9px 0!important}
+.workoutCategoryInput input{max-width:100%}
