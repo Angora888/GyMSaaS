@@ -7,13 +7,18 @@ async function api(path,token,method='GET',body){
  return data;
 }
 export default function MembershipsPanel({token,members}){
- const [plans,setPlans]=useState([]),[subs,setSubs]=useState([]),[error,setError]=useState(''),[message,setMessage]=useState(''),[saving,setSaving]=useState(false);
+ const [billing,setBilling]=useState({subscriptions:[],payments:[],monthTotals:[]}),[payment,setPayment]=useState({subscriptionId:'',amount:'',method:'SINPE',note:''}),[plans,setPlans]=useState([]),[subs,setSubs]=useState([]),[error,setError]=useState(''),[message,setMessage]=useState(''),[saving,setSaving]=useState(false);
  const [plan,setPlan]=useState({name:'',price:'',currency:'CRC',durationDays:'30'});
  const [assign,setAssign]=useState({memberId:'',planId:'',startDate:new Date().toLocaleDateString('en-CA')});
- async function refresh(){try{const [p,s]=await Promise.all([api('/api/admin/plans',token),api('/api/admin/subscriptions',token)]);setPlans(p);setSubs(s)}catch(e){setError(e.message)}}
+ async function refresh(){try{const [p,s,b]=await Promise.all([api('/api/admin/plans',token),api('/api/admin/subscriptions',token),api('/api/admin/billing',token)]);setPlans(p);setSubs(s);setBilling(b)}catch(e){setError(e.message)}}
  useEffect(()=>{refresh()},[token]);
  async function createPlan(e){e.preventDefault();setSaving(true);setError('');setMessage('');try{await api('/api/admin/plans',token,'POST',{...plan,price:Number(plan.price),durationDays:Number(plan.durationDays)});setPlan({name:'',price:'',currency:'CRC',durationDays:'30'});await refresh();setMessage('Plan creado correctamente.')}catch(e){setError(e.message)}finally{setSaving(false)}}
  async function assignPlan(e){e.preventDefault();setSaving(true);setError('');setMessage('');try{await api('/api/admin/subscriptions',token,'POST',assign);await refresh();setMessage('Membresía asignada correctamente.')}catch(e){setError(e.message)}finally{setSaving(false)}}
+ async function recordPayment(e){e.preventDefault();setSaving(true);setError('');setMessage('');try{
+  await api('/api/admin/billing/payments',token,'POST',{...payment,amount:Number(payment.amount)});
+  setPayment({subscriptionId:'',amount:'',method:'SINPE',note:''});await refresh();setMessage('Pago registrado correctamente.');
+ }catch(e){setError(e.message)}finally{setSaving(false)}}
+ const fmt=(n,currency)=>new Intl.NumberFormat('es-CR',{style:'currency',currency}).format(n);
  return <div className="membershipLayout">
  <section className="panel"><h2>Planes del gimnasio</h2><p>Creá tus planes y definí cuánto duran. La asignación no registra ni confirma un pago.</p>
  <form onSubmit={createPlan} className="membershipForm"><label>Nombre del plan<input required minLength={2} maxLength={100} value={plan.name} onChange={e=>setPlan({...plan,name:e.target.value})} placeholder="Mensual"/></label>
@@ -28,5 +33,16 @@ export default function MembershipsPanel({token,members}){
  <button disabled={saving||!plans.length||!members.length} className="primary">Asignar membresía</button></form>
  {error&&<p role="alert" className="error">{error}</p>}{message&&<p className="membershipMessage" role="status">{message}</p>}
  <h2>Asignaciones recientes</h2>{subs.length?subs.slice(0,30).map(s=><div className="membershipRow" key={s.id}><strong>{s.memberName} · {s.planName}</strong><span>{s.startDate} — {s.endDate}</span></div>):<p>Aún no hay membresías asignadas.</p>}
+ </section>
+ <section className="panel billingPanel"><h2>Control de cobros</h2><p>Registrá pagos de membresías. Los ingresos se calculan únicamente con pagos registrados, no con planes asignados.</p>
+ <div className="billingSummary">{billing.monthTotals.map(t=><div key={t.currency}><small>Ingresos del mes · {t.currency}</small><strong>{fmt(t.total,t.currency)}</strong></div>)}{!billing.monthTotals.length&&<p>Sin pagos registrados este mes.</p>}</div>
+ <form onSubmit={recordPayment} className="membershipForm">
+ <label>Membresía<select required value={payment.subscriptionId} onChange={e=>{const s=billing.subscriptions.find(x=>x.id===e.target.value);setPayment(p=>({...p,subscriptionId:e.target.value,amount:s?String(s.balance):''}))}}><option value="">Seleccionar membresía pendiente</option>{billing.subscriptions.filter(x=>x.balance>0).map(s=><option key={s.id} value={s.id}>{s.memberName} · {s.planName} · {fmt(s.balance,s.currency)}</option>)}</select></label>
+ <label>Monto<input required type="number" min="0.01" step="0.01" value={payment.amount} onChange={e=>setPayment(p=>({...p,amount:e.target.value}))}/></label>
+ <label>Método<select value={payment.method} onChange={e=>setPayment(p=>({...p,method:e.target.value}))}>{['SINPE','Efectivo','Transferencia','Tarjeta','Otro'].map(x=><option key={x}>{x}</option>)}</select></label>
+ <label>Nota (opcional)<input maxLength={300} value={payment.note} onChange={e=>setPayment(p=>({...p,note:e.target.value}))}/></label>
+ <button className="primary" disabled={saving||!payment.subscriptionId}>Registrar pago</button></form>
+ <h3>Saldos de membresías</h3>{billing.subscriptions.length?billing.subscriptions.map(s=><div className="billingRow" key={s.id}><div><strong>{s.memberName} · {s.planName}</strong><small>{s.startDate} — {s.endDate}</small></div><div><strong>{fmt(s.balance,s.currency)}</strong><small>{s.balance===0?'Pagada':s.paid>0?'Pago parcial':'Pendiente'} · Abonado {fmt(s.paid,s.currency)}</small></div></div>):<p>Aún no hay membresías.</p>}
+ <h3>Últimos pagos</h3>{billing.payments.slice(0,20).map(x=><div className="billingRow" key={x.id}><span>{new Date(x.paidAt).toLocaleDateString('es-CR')} · {x.method}</span><strong>{fmt(x.amount,x.currency)}</strong></div>)}
  </section></div>;
 }
