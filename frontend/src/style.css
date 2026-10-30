@@ -74,3 +74,10 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .mhProfileActions .primary{flex:1;margin-top:0}.mhProfileActions .secondary{flex:1}
 .mhSignout{margin-top:18px}
 @media(max-width:380px){.mhProfileGrid{grid-template-columns:1fr}}
+
+
+/* Measurement progress charts */
+.mhChart{margin:12px 0 24px;padding:12px;background:#131418;border:1px solid #42303a;border-radius:15px}
+.mhChart svg{display:block;width:100%;height:auto;overflow:visible}
+.mhChartLabels{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#b4adb4;font-size:12px}
+.mhChartLabels strong{color:#ff7686;font-size:18px}
