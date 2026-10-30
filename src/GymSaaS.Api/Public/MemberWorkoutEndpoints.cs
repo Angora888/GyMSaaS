@@ -29,6 +29,24 @@ public static class MemberWorkoutEndpoints {
    var entity=new MemberWorkoutProgram{GymId=gym,MemberId=member,Name=input.Name.Trim(),Description=input.Description?.Trim(),IsActive=input.IsActive,DaysJson=JsonSerializer.Serialize(input.Days)};
    db.MemberWorkoutPrograms.Add(entity);await db.SaveChangesAsync();return Results.Ok(new{entity.Id});
   });
+  group.MapPut("/{programId:guid}",async(Guid programId,WorkoutProgramInput input,ClaimsPrincipal user,GymDbContext db)=>{
+   if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
+   if(!Valid(input))return Results.BadRequest(new{message="Revisá los días, ejercicios, series, repeticiones y descansos."});
+   var entity=await db.MemberWorkoutPrograms.SingleOrDefaultAsync(p=>p.Id==programId&&p.GymId==gym&&p.MemberId==member);
+   if(entity is null)return Results.NotFound();
+   if(await db.MemberWorkoutSessions.AnyAsync(s=>s.ProgramId==programId&&s.GymId==gym&&s.MemberId==member&&s.FinishedAt==null))
+    return Results.Conflict(new{message="Terminá el entrenamiento que está en curso antes de editar esta rutina."});
+   if(input.IsActive){
+    var old=await db.MemberWorkoutPrograms.Where(p=>p.GymId==gym&&p.MemberId==member&&p.Id!=programId&&p.IsActive).ToListAsync();
+    foreach(var p in old)p.IsActive=false;
+   }
+   entity.Name=input.Name.Trim();
+   entity.Description=input.Description?.Trim();
+   entity.IsActive=input.IsActive;
+   entity.DaysJson=JsonSerializer.Serialize(input.Days);
+   await db.SaveChangesAsync();
+   return Results.Ok(new{entity.Id,entity.Name,entity.IsActive});
+  });
   group.MapPost("/{programId:guid}/days/{dayId}/start",async(Guid programId,string dayId,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
    var program=await db.MemberWorkoutPrograms.AsNoTracking().FirstOrDefaultAsync(p=>p.Id==programId&&p.GymId==gym&&p.MemberId==member);
