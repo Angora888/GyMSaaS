@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 namespace GymSaaS.Api.Members;
 public sealed record TrainerAccountInput(string Email,string Password);
+public sealed record ResetTrainerPasswordInput(string Password);
 public static class TrainerPortalEndpoints{
  public static IEndpointRouteBuilder MapTrainerPortal(this IEndpointRouteBuilder app){
   app.MapPost("/api/admin/trainers/{trainerId:guid}/account",async(Guid trainerId,TrainerAccountInput input,ClaimsPrincipal principal,GymDbContext db,IPasswordHasher<AppUser> hasher)=>{
