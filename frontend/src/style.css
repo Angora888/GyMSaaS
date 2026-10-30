@@ -295,3 +295,10 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .trainerProgramRow{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #4a323c;padding:12px 0;flex-wrap:wrap}
 .trainerProgramRow .secondary{margin:0}
 .trainerRoutineEditor{scroll-margin-top:24px}
+
+/* Attendance history filters */
+.attendanceHistory{margin-top:28px;border-top:1px solid #503743;padding-top:18px}
+.attendanceFilters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+.attendanceFilters label{min-width:0}
+.attendanceFilters input{width:100%;min-width:0;margin-top:7px}
+@media(max-width:650px){.attendanceFilters{grid-template-columns:1fr}}
