@@ -21,7 +21,7 @@ public static class TrainerPortalEndpoints{
    var user=new AppUser{GymId=gym,TrainerId=trainerId,Email=email,FullName=trainer.Name,PasswordHash="",Role="Trainer"};
    user.PasswordHash=hasher.HashPassword(user,input.Password);db.Users.Add(user);
    try{await db.SaveChangesAsync();}catch(DbUpdateException){return Results.Conflict(new{message="El correo ya está registrado."});}
-   return Results.Ok(new{user.Id,user.Email,trainer.Id,trainer.Name});
+   return Results.Ok(new{userId=user.Id,user.Email,trainerId=trainer.Id,trainer.Name});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
   var group=app.MapGroup("/api/trainer").RequireAuthorization(p=>p.RequireRole("Trainer"));
   group.MapGet("/overview",async(ClaimsPrincipal principal,GymDbContext db)=>{
