@@ -257,3 +257,8 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .workoutCatalogPicker .secondary{width:100%;min-height:44px}
 .workoutCategoryInput{display:block;margin:9px 0!important}
 .workoutCategoryInput input{max-width:100%}
+
+/* Admin overview shortcuts */
+.adminOverviewActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.adminOverviewActions .secondary{margin:0;flex:1;min-width:155px}
+@media(max-width:750px){.adminOverviewActions{flex-direction:column}.adminOverviewActions .secondary{width:100%;min-width:0;flex:auto}}
