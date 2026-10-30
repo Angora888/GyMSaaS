@@ -11,6 +11,7 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
  public DbSet<MemberSubscription> Subscriptions=>Set<MemberSubscription>();
  public DbSet<Attendance> Attendances=>Set<Attendance>();
  public DbSet<Trainer> Trainers=>Set<Trainer>();
+ public DbSet<ExerciseCatalogItem> ExerciseCatalogItems=>Set<ExerciseCatalogItem>();
  public DbSet<TrainerMember> TrainerMembers=>Set<TrainerMember>();
  public DbSet<WorkoutRoutine> Routines=>Set<WorkoutRoutine>();
  public DbSet<MemberWorkoutProgram> MemberWorkoutPrograms=>Set<MemberWorkoutProgram>();
@@ -20,6 +21,7 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
   b.Entity<MemberWorkoutProgram>().HasOne<Member>().WithMany().HasForeignKey(x=>new{x.GymId,x.MemberId}).HasPrincipalKey(x=>new{x.GymId,x.Id}).OnDelete(DeleteBehavior.Cascade);
   b.Entity<MemberWorkoutSession>().HasIndex(x=>new{x.GymId,x.MemberId});
   b.Entity<MemberWorkoutSession>().HasOne<MemberWorkoutProgram>().WithMany().HasForeignKey(x=>x.ProgramId).OnDelete(DeleteBehavior.Cascade);
+  b.Entity<ExerciseCatalogItem>().HasIndex(x=>new{x.GymId,x.Category,x.Name}).IsUnique();
   b.Entity<Gym>().HasIndex(x=>x.Slug).IsUnique();
   b.Entity<AppUser>().HasIndex(x=>x.Email).IsUnique();
   b.Entity<AppUser>().HasIndex(x=>x.GoogleSubject).IsUnique();
