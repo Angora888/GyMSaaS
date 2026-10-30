@@ -13,7 +13,13 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
  public DbSet<Trainer> Trainers=>Set<Trainer>();
  public DbSet<TrainerMember> TrainerMembers=>Set<TrainerMember>();
  public DbSet<WorkoutRoutine> Routines=>Set<WorkoutRoutine>();
+ public DbSet<MemberWorkoutProgram> MemberWorkoutPrograms=>Set<MemberWorkoutProgram>();
+ public DbSet<MemberWorkoutSession> MemberWorkoutSessions=>Set<MemberWorkoutSession>();
  protected override void OnModelCreating(ModelBuilder b){
+  b.Entity<MemberWorkoutProgram>().HasIndex(x=>new{x.GymId,x.MemberId});
+  b.Entity<MemberWorkoutProgram>().HasOne<Member>().WithMany().HasForeignKey(x=>new{x.GymId,x.MemberId}).HasPrincipalKey(x=>new{x.GymId,x.Id}).OnDelete(DeleteBehavior.Cascade);
+  b.Entity<MemberWorkoutSession>().HasIndex(x=>new{x.GymId,x.MemberId});
+  b.Entity<MemberWorkoutSession>().HasOne<MemberWorkoutProgram>().WithMany().HasForeignKey(x=>x.ProgramId).OnDelete(DeleteBehavior.Cascade);
   b.Entity<Gym>().HasIndex(x=>x.Slug).IsUnique();
   b.Entity<AppUser>().HasIndex(x=>x.Email).IsUnique();
   b.Entity<AppUser>().HasIndex(x=>x.GoogleSubject).IsUnique();
