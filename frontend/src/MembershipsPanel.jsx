@@ -7,7 +7,7 @@ async function api(path,token,method='GET',body){
  return data;
 }
 export default function MembershipsPanel({token,members}){
- const [billing,setBilling]=useState({subscriptions:[],payments:[],monthTotals:[]}),[payment,setPayment]=useState({subscriptionId:'',amount:'',method:'SINPE',note:''}),[plans,setPlans]=useState([]),[subs,setSubs]=useState([]),[error,setError]=useState(''),[message,setMessage]=useState(''),[saving,setSaving]=useState(false);
+ const [billingFilter,setBillingFilter]=useState('all'),[billingSearch,setBillingSearch]=useState(''),[billing,setBilling]=useState({subscriptions:[],payments:[],monthTotals:[]}),[payment,setPayment]=useState({subscriptionId:'',amount:'',method:'SINPE',note:''}),[plans,setPlans]=useState([]),[subs,setSubs]=useState([]),[error,setError]=useState(''),[message,setMessage]=useState(''),[saving,setSaving]=useState(false);
  const [plan,setPlan]=useState({name:'',price:'',currency:'CRC',durationDays:'30'});
  const [assign,setAssign]=useState({memberId:'',planId:'',startDate:new Date().toLocaleDateString('en-CA')});
  async function refresh(){try{const [p,s,b]=await Promise.all([api('/api/admin/plans',token),api('/api/admin/subscriptions',token),api('/api/admin/billing',token)]);setPlans(p);setSubs(s);setBilling(b)}catch(e){setError(e.message)}}
@@ -19,6 +19,23 @@ export default function MembershipsPanel({token,members}){
   setPayment({subscriptionId:'',amount:'',method:'SINPE',note:''});await refresh();setMessage('Pago registrado correctamente.');
  }catch(e){setError(e.message)}finally{setSaving(false)}}
  const fmt=(n,currency)=>new Intl.NumberFormat('es-CR',{style:'currency',currency}).format(n);
+ const today=new Date().toLocaleDateString('en-CA',{timeZone:'America/Costa_Rica'});
+ const plusDays=(date,days)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)};
+ const status=s=>s.endDate<today?'expired':s.endDate<=plusDays(today,7)?'expiring':'current';
+ const visibleSubs=billing.subscriptions.filter(s=>{
+  const matched=(s.memberName+' '+s.planName).toLowerCase().includes(billingSearch.toLowerCase().trim());
+  return matched&&(billingFilter==='all'||billingFilter==='due'&&s.balance>0||billingFilter==='expired'&&status(s)==='expired'||billingFilter==='expiring'&&status(s)==='expiring'||billingFilter==='paid'&&s.balance===0);
+ });
+ function renew(s){
+  const original=subs.find(x=>x.id===s.id);if(!original)return;
+  const latest=subs.filter(x=>x.memberId===original.memberId).map(x=>x.endDate).sort().at(-1);
+  const start=latest&&latest>=today?plusDays(latest,1):today;
+  setAssign({memberId:original.memberId,planId:original.planId,startDate:start});
+  setMessage('Renovación preparada para '+s.memberName+'. Revisá la fecha y confirmá en Asignar una membresía.');
+  setError('');
+  document.querySelector('.membershipAssignSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+ }
+
  return <div className="membershipLayout">
  <section className="panel"><h2>Planes del gimnasio</h2><p>Creá tus planes y definí cuánto duran. La asignación no registra ni confirma un pago.</p>
  <form onSubmit={createPlan} className="membershipForm"><label>Nombre del plan<input required minLength={2} maxLength={100} value={plan.name} onChange={e=>setPlan({...plan,name:e.target.value})} placeholder="Mensual"/></label>
@@ -26,7 +43,7 @@ export default function MembershipsPanel({token,members}){
  <label>Moneda<select value={plan.currency} onChange={e=>setPlan({...plan,currency:e.target.value})}><option value="CRC">Colones (CRC)</option><option value="USD">Dólares (USD)</option></select></label>
  <label>Duración (días)<input required type="number" min="1" max="3660" value={plan.durationDays} onChange={e=>setPlan({...plan,durationDays:e.target.value})}/></label><button disabled={saving} className="primary">Crear plan</button></form>
  <div>{plans.length?plans.map(p=><div className="membershipRow" key={p.id}><strong>{p.name}</strong><span>{new Intl.NumberFormat('es-CR',{style:'currency',currency:p.currency}).format(p.price)} · {p.durationDays} días</span></div>):<p>No hay planes creados.</p>}</div></section>
- <section className="panel"><h2>Asignar una membresía</h2><form className="membershipForm" onSubmit={assignPlan}>
+ <section className="panel membershipAssignSection"><h2>Asignar una membresía</h2><form className="membershipForm" onSubmit={assignPlan}>
  <label>Miembro<select required value={assign.memberId} onChange={e=>setAssign({...assign,memberId:e.target.value})}><option value="">Seleccioná un miembro</option>{members.map(m=><option key={m.id} value={m.id}>{m.fullName}</option>)}</select></label>
  <label>Plan<select required value={assign.planId} onChange={e=>setAssign({...assign,planId:e.target.value})}><option value="">Seleccioná un plan</option>{plans.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}</select></label>
  <label>Fecha de inicio<input required type="date" value={assign.startDate} onChange={e=>setAssign({...assign,startDate:e.target.value})}/></label>
@@ -42,7 +59,10 @@ export default function MembershipsPanel({token,members}){
  <label>Método<select value={payment.method} onChange={e=>setPayment(p=>({...p,method:e.target.value}))}>{['SINPE','Efectivo','Transferencia','Tarjeta','Otro'].map(x=><option key={x}>{x}</option>)}</select></label>
  <label>Nota (opcional)<input maxLength={300} value={payment.note} onChange={e=>setPayment(p=>({...p,note:e.target.value}))}/></label>
  <button className="primary" disabled={saving||!payment.subscriptionId}>Registrar pago</button></form>
- <h3>Saldos de membresías</h3>{billing.subscriptions.length?billing.subscriptions.map(s=><div className="billingRow" key={s.id}><div><strong>{s.memberName} · {s.planName}</strong><small>{s.startDate} — {s.endDate}</small></div><div><strong>{fmt(s.balance,s.currency)}</strong><small>{s.balance===0?'Pagada':s.paid>0?'Pago parcial':'Pendiente'} · Abonado {fmt(s.paid,s.currency)}</small></div></div>):<p>Aún no hay membresías.</p>}
+ <h3>Cuentas por cobrar y vencimientos</h3>
+ <div className="billingFilters"><input type="search" aria-label="Buscar membresías" placeholder="Buscar miembro o plan" value={billingSearch} onChange={e=>setBillingSearch(e.target.value)}/><select aria-label="Filtrar membresías" value={billingFilter} onChange={e=>setBillingFilter(e.target.value)}><option value="all">Todas</option><option value="due">Con saldo pendiente</option><option value="expired">Vencidas</option><option value="expiring">Vencen en 7 días</option><option value="paid">Pagadas</option></select></div>
+ <small>{visibleSubs.length} membresías en este filtro · Los saldos y vencimientos se muestran por separado.</small>
+ {visibleSubs.length?visibleSubs.map(s=><div className="billingRow" key={s.id}><div><strong>{s.memberName} · {s.planName}</strong><small>{s.startDate} — {s.endDate} · {status(s)==='expired'?'Vencida':status(s)==='expiring'?'Próxima a vencer':'Vigente'}</small></div><div className="billingRowActions"><strong>{fmt(s.balance,s.currency)} pendiente</strong><small>{s.balance===0?'Pagada':s.paid>0?'Pago parcial':'Sin pagos'} · Abonado {fmt(s.paid,s.currency)}</small><button className="secondary" type="button" onClick={()=>renew(s)}>Renovar</button>{s.balance>0&&<button className="secondary" type="button" onClick={()=>{setPayment(p=>({...p,subscriptionId:s.id,amount:String(s.balance)}));setMessage('Seleccionaste el saldo de '+s.memberName+'. Revisá los datos y confirmá el pago.')}}>Cobrar saldo</button>}</div></div>):<p>No hay membresías que coincidan con los filtros.</p>}
  <h3>Últimos pagos</h3>{billing.payments.slice(0,20).map(x=><div className="billingRow" key={x.id}><span>{new Date(x.paidAt).toLocaleDateString('es-CR')} · {x.method}</span><strong>{fmt(x.amount,x.currency)}</strong></div>)}
  </section></div>;
 }
