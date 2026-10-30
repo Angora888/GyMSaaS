@@ -81,3 +81,11 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .mhChart svg{display:block;width:100%;height:auto;overflow:visible}
 .mhChartLabels{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#b4adb4;font-size:12px}
 .mhChartLabels strong{color:#ff7686;font-size:18px}
+
+/* Owner member follow-up */
+.memberActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.coachPanel{margin-bottom:20px}.coachMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.coachMetrics>div{background:#131318;border:1px solid #52313a;padding:15px;border-radius:13px}
+.coachMetrics small{display:block;color:#b5a6ad}.coachMetrics strong{font-size:22px;color:#ff727f}
+.coachHistory{max-height:300px;overflow-y:auto}.coachForm textarea{display:block;width:100%;margin-top:7px;border:1px solid #554047;background:#101013;color:white;border-radius:11px;padding:13px;font:inherit;resize:vertical}
+@media(max-width:550px){.coachMetrics{grid-template-columns:1fr 1fr}.memberActions .secondary{padding:9px}}
