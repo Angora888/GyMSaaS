@@ -41,6 +41,22 @@ public static class AttendanceEndpoints {
    return Results.Ok(new{count=entries.Count,entries});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
 
+  app.MapGet("/api/admin/attendance/history",async(DateOnly? from,DateOnly? to,ClaimsPrincipal principal,GymDbContext db)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
+   var zone=TimeZoneInfo.FindSystemTimeZoneById("America/Costa_Rica");
+   var now=DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow,zone).Date);
+   var start=from??now.AddDays(-6);var end=to??now;
+   if(start>end||end.DayNumber-start.DayNumber>92)return Results.BadRequest(new{message="Seleccioná un rango válido de hasta 93 días."});
+   var beginLocal=start.ToDateTime(TimeOnly.MinValue);
+   var endLocal=end.AddDays(1).ToDateTime(TimeOnly.MinValue);
+   var begin=new DateTimeOffset(beginLocal,zone.GetUtcOffset(beginLocal)).ToUniversalTime();
+   var finish=new DateTimeOffset(endLocal,zone.GetUtcOffset(endLocal)).ToUniversalTime();
+   var entries=await db.Attendances.AsNoTracking().Where(a=>a.GymId==gym&&a.CheckedInAt>=begin&&a.CheckedInAt<finish)
+    .Join(db.Members.AsNoTracking(),a=>new{a.GymId,Id=a.MemberId},m=>new{m.GymId,m.Id},(a,m)=>new{m.Id,m.FullName,a.CheckedInAt})
+    .OrderByDescending(x=>x.CheckedInAt).Take(2000).ToListAsync();
+   return Results.Ok(new{entries,count=entries.Count,truncated=entries.Count==2000,from=start,to=end});
+  }).RequireAuthorization(p=>p.RequireRole("Owner"));
+
   app.MapPost("/api/member/checkin",async(CheckinRequest req,ClaimsPrincipal principal,GymDbContext db,IConfiguration cfg)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gymId)||!Guid.TryParse(principal.FindFirst("member_id")?.Value,out var memberId))return Results.Unauthorized();
    if(string.IsNullOrWhiteSpace(req.Code)||!Validate(gymId,req.Code,cfg["Jwt:Key"]!))
