@@ -8,7 +8,7 @@ public static class MemberDashboardEndpoints {
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gymId)||
       !Guid.TryParse(principal.FindFirst("member_id")?.Value,out var memberId))return Results.Unauthorized();
    var member=await db.Members.AsNoTracking().Where(x=>x.GymId==gymId&&x.Id==memberId)
-     .Select(x=>new{x.Id,x.FullName,x.Email,x.Phone}).FirstOrDefaultAsync();
+     .Select(x=>new{x.Id,x.FullName,x.Email,x.Phone,x.EmergencyPhone,x.WeightKg,x.HeightCm}).FirstOrDefaultAsync();
    if(member is null)return Results.Unauthorized();
    var gym=await db.Gyms.AsNoTracking().Where(x=>x.Id==gymId&&x.IsActive)
      .Select(x=>new{x.Name,x.Slug}).FirstOrDefaultAsync();
