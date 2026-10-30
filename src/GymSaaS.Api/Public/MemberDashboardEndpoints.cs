@@ -25,8 +25,9 @@ public static class MemberDashboardEndpoints {
      .OrderByDescending(x=>x.CheckedInAt).Select(x=>x.CheckedInAt).ToListAsync();
    var routine=await db.Routines.AsNoTracking().Where(x=>x.GymId==gymId&&x.MemberId==memberId)
      .OrderBy(x=>x.Name).Select(x=>new{x.Id,x.Name,x.Description}).FirstOrDefaultAsync();
+   var personalProgram=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gymId&&x.MemberId==memberId&&x.IsActive).OrderByDescending(x=>x.CreatedAt).Select(x=>new{x.Id,x.Name,x.Description}).FirstOrDefaultAsync();
    return Results.Ok(new{
-    member,gym,
+    member,gym,personalProgram,
     membership=subscription is null?null:new {subscription.plan,subscription.startDate,subscription.endDate,subscription.price,subscription.currency,
       status=subscription.startDate<=today&&subscription.endDate>=today?"active":subscription.endDate<today?"expired":"upcoming"},
     attendance=attendance.Select(x=>x.ToString("O")).ToArray(),routine
