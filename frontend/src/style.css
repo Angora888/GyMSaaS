@@ -178,3 +178,30 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .trainerNote{font-size:13px}
 @media(max-width:950px){.trainerLayout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:750px){.adminMobileNav button{padding:7px 1px}.adminMobileNav button span{font-size:20px}.adminMobileNav button small{font-size:clamp(9px,2.2vw,11px)}}
+
+
+/* Member self-managed workout plans and training progress */
+.workoutPage{min-width:0;padding-bottom:24px}.workoutPage h2{font-size:27px}
+.workoutHeading{display:flex;flex-direction:column;gap:4px;margin-bottom:18px}
+.workoutHeading .primary{margin:3px 0 6px}
+.workoutProgram{border-color:#784052}.workoutProgram>small{color:#ff7182;font-weight:800;letter-spacing:1px}
+.workoutProgram>strong{color:#ff8191}.workoutDays{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:18px}
+.workoutDays button{padding:18px 12px;border:1px solid #b8354d;background:#3a222e;color:#fff;border-radius:14px;font-weight:800}
+.workoutDays small{display:block;font-size:11px;color:#ffbec7;margin-top:7px}
+.workoutBuilder{display:grid;gap:18px}.workoutBuilder label{margin:0}.workoutBuilder textarea{width:100%;border:1px solid #554047;background:#101013;color:#fff;border-radius:12px;padding:12px;margin-top:8px;font:inherit}
+.workoutRow{display:flex;align-items:center;gap:8px;justify-content:space-between;min-width:0}.workoutRow input{min-width:0;flex:1}.workoutRow .secondary{flex-shrink:0}
+.workoutCheck{display:flex;align-items:center;gap:12px;background:#2b2028;padding:15px;border-radius:14px}.workoutCheck input{width:20px;height:20px;margin:0}
+.workoutDayEditor{margin:0}.workoutWeek{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:15px 0}
+.workoutWeek button{min-width:0;aspect-ratio:1;border:1px solid #554047;background:#111217;color:#bcb8bf;border-radius:50%;font-weight:800}
+.workoutWeek button.selected{background:#df2e47;color:white;border-color:#df2e47}
+.workoutExerciseEditor{background:#121319;border:1px solid #3d3037;border-radius:16px;padding:15px;margin:12px 0}
+.workoutFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}
+.workoutFields label{min-width:0;font-size:12px}.workoutFields input{min-width:0;padding:10px 7px}
+.workoutAdd{width:100%;margin-top:10px;border-style:dashed}
+.workoutActions{display:flex;gap:12px;padding:12px 0}.workoutActions .primary{margin:0;flex:1}.workoutActions .secondary{flex:1}
+.workoutSummary{border-color:#843447}.workoutTrack{height:12px;background:#101118;border-radius:999px;overflow:hidden}
+.workoutTrack div{height:100%;background:linear-gradient(90deg,#b51d36,#fa5367);border-radius:999px;transition:width .2s}
+.workoutExercise h3{font-size:22px;margin:0}.workoutSetButtons{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:9px}
+.workoutSetButtons button{padding:15px 8px;border:1px solid #6c3a47;border-radius:12px;background:#281b22;color:#ffd6db;font-weight:800}
+.workoutSetButtons button.done{background:#168c64;border-color:#168c64;color:white}.workoutFinish{margin-top:10px}
+@media(max-width:390px){.workoutFields{grid-template-columns:1fr 1fr}.workoutFields label:last-child{grid-column:1/-1}.workoutRow input{max-width:100%}}
