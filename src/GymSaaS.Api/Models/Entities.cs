@@ -39,6 +39,7 @@ public sealed class Attendance {
     public Guid GymId { get; set; }
     public Guid MemberId { get; set; }
     public DateTimeOffset CheckedInAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? CheckedOutAt { get; set; }
 }
 public sealed class Trainer {
     public Guid Id { get; set; } = Guid.NewGuid();
