@@ -211,3 +211,14 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .workoutImportLabel input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;padding:0;border:0}
 .workoutImportLabel:focus-within{outline:2px solid #ff7581;outline-offset:3px}
 .workoutHeading>small{color:#acabb5;text-align:center;line-height:1.5}
+
+
+/* Workout tracking: weight per set and automatic rest timer */
+.workoutRest{position:sticky;top:10px;z-index:5;border:1px solid #cf3650;background:#2e1b27;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.workoutRest strong{color:#ff9aa9}.workoutRest span{font-size:23px;font-weight:900;font-variant-numeric:tabular-nums}.workoutRest .secondary{margin:0}
+.workoutSetButtons{display:flex;flex-direction:column;gap:10px}
+.workoutSetRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,1fr);gap:10px;align-items:end;padding:9px;border:1px solid #40313b;border-radius:13px;background:#131419}
+.workoutSetRow label{font-size:12px;margin:0;min-width:0}
+.workoutSetRow input{width:100%;min-width:0;margin-top:5px;padding:10px}
+.workoutSetRow button{width:100%;min-height:45px}
+@media(max-width:390px){.workoutRest{top:0}.workoutSetRow{grid-template-columns:minmax(0,1fr) minmax(100px,1fr)}}
