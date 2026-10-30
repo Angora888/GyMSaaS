@@ -89,3 +89,42 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .coachMetrics small{display:block;color:#b5a6ad}.coachMetrics strong{font-size:22px;color:#ff727f}
 .coachHistory{max-height:300px;overflow-y:auto}.coachForm textarea{display:block;width:100%;margin-top:7px;border:1px solid #554047;background:#101013;color:white;border-radius:11px;padding:13px;font:inherit;resize:vertical}
 @media(max-width:550px){.coachMetrics{grid-template-columns:1fr 1fr}.memberActions .secondary{padding:9px}}
+
+
+/* Admin mobile layout: prevent clipped cards on narrow iPhones */
+.layout,.layout main,.layout aside,.layout header,.layout header>div,.layout .panel,.layout .member,.layout .membershipRow{min-width:0;max-width:100%}
+.layout{width:100%;grid-template-columns:242px minmax(0,1fr)}
+.layout main{width:100%}
+.layout .panel h2,.layout .panel p,.layout .member b,.layout .membershipRow strong,.layout .membershipRow span{overflow-wrap:anywhere}
+.layout .metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+.layout .metrics .panel{min-width:0}
+@media(max-width:1100px){.layout .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){
+ .layout{display:block;overflow-x:clip}
+ .layout aside{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:14px 15px;border-right:0;border-bottom:1px solid #35272b}
+ .layout aside::-webkit-scrollbar{display:none}
+ .layout aside .brand{position:sticky;left:0;z-index:1;background:#131315;flex:0 0 auto;width:auto;font-size:17px;letter-spacing:.5px;padding-right:12px;white-space:nowrap}
+ .layout aside .small{display:none}
+ .layout aside .navitem{white-space:nowrap;flex:0 0 auto;min-height:44px;margin:0;padding:10px 12px;font-size:13px;gap:7px}
+ .layout aside .bottom{margin:0}
+ .layout main{padding:24px 16px calc(40px + env(safe-area-inset-bottom,0px))}
+ .layout header{display:flex;flex-wrap:nowrap;align-items:center;gap:12px;margin-bottom:24px}
+ .layout header>div:first-child{flex:1;min-width:0}
+ .layout header h1{font-size:clamp(25px,7vw,36px);line-height:1.15;overflow-wrap:break-word}
+ .layout header p{font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+ .layout header .avatar{width:42px;height:42px;flex:0 0 42px}
+ .layout .metrics{gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .layout .metrics .panel{padding:17px 15px;border-radius:17px}
+ .layout .metrics .panel span,.layout .metrics .panel small{display:block;overflow-wrap:anywhere}
+ .layout .metrics .panel strong{font-size:clamp(27px,8vw,36px)}
+ .layout .panel{max-width:100%;padding:18px 16px}
+ .layout .panel h2{font-size:clamp(18px,5vw,23px);line-height:1.25}
+ .layout .member{align-items:flex-start;flex-wrap:wrap}
+ .layout .qrWhite{max-width:100%;overflow:hidden}
+ .layout .qrWhite svg{max-width:100%;height:auto}
+}
+@media(max-width:390px){
+ .layout .metrics{grid-template-columns:1fr}
+ .layout aside .brand{font-size:15px}
+ .layout main{padding-left:13px;padding-right:13px}
+}
