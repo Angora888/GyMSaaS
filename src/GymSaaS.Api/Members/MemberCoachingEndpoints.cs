@@ -14,7 +14,8 @@ public static class MemberCoachingEndpoints{
    if(member is null)return Results.NotFound();
    var history=await db.MemberMeasurements.AsNoTracking().Where(x=>x.GymId==gymId&&x.MemberId==memberId).OrderByDescending(x=>x.RecordedAt).Take(120).Select(x=>new{x.Id,x.WeightKg,x.HeightCm,x.RecordedAt}).ToListAsync();
    var routines=await db.Routines.AsNoTracking().Where(x=>x.GymId==gymId&&x.MemberId==memberId).OrderBy(x=>x.Name).Select(x=>new{x.Id,x.Name,x.Description}).ToListAsync();
-   return Results.Ok(new{member,measurements=history.OrderBy(x=>x.RecordedAt).Select(x=>new{x.Id,x.WeightKg,x.HeightCm,x.RecordedAt,Bmi=Math.Round(x.WeightKg/((x.HeightCm/100m)*(x.HeightCm/100m)),1)}),routines});
+   var programs=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gymId&&x.MemberId==memberId).OrderByDescending(x=>x.CreatedAt).Select(x=>new{x.Id,x.Name,x.Description,x.IsActive}).ToListAsync();
+   return Results.Ok(new{member,measurements=history.OrderBy(x=>x.RecordedAt).Select(x=>new{x.Id,x.WeightKg,x.HeightCm,x.RecordedAt,Bmi=Math.Round(x.WeightKg/((x.HeightCm/100m)*(x.HeightCm/100m)),1)}),routines=programs});
   });
   group.MapPost("/{memberId:guid}/routines",async(Guid memberId,RoutineAssignment input,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Guid.TryParse(user.FindFirst("gym_id")?.Value,out var gymId))return Results.Unauthorized();
