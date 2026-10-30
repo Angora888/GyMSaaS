@@ -19,7 +19,20 @@ public static class OwnerDashboardEndpoints {
    var monthStartUtc=new DateTimeOffset(monthStart,tz.GetUtcOffset(monthStart)).ToUniversalTime();
    var monthPayments=await db.MembershipPayments.AsNoTracking().Where(p=>p.GymId==gymId&&p.PaidAt>=monthStartUtc&&p.PaidAt<=DateTimeOffset.UtcNow)
     .GroupBy(p=>p.Currency).Select(g=>new{currency=g.Key,total=g.Sum(p=>p.Amount)}).ToListAsync();
-   return Results.Ok(new{members=total,activeMemberships=active,expiringMemberships=expiring,attendanceToday=attendance,monthPayments,asOf=today});
+   var windowStart=dayStart.AddDays(-29);
+   var attendance30=await db.Attendances.AsNoTracking().Where(a=>a.GymId==gymId&&a.CheckedInAt>=windowStart&&a.CheckedInAt<dayEnd)
+     .GroupBy(a=>a.MemberId).Select(g=>new{memberId=g.Key,visits=g.Count(),lastVisit=g.Max(a=>a.CheckedInAt)}).ToListAsync();
+   var activeMembers=await db.Subscriptions.AsNoTracking().Where(s=>s.GymId==gymId&&s.StartDate<=today&&s.EndDate>=today)
+     .Select(s=>s.MemberId).Distinct().Join(db.Members.AsNoTracking().Where(m=>m.GymId==gymId),id=>id,m=>m.Id,(id,m)=>new{m.Id,m.FullName}).ToListAsync();
+   var visitMap=attendance30.ToDictionary(x=>x.memberId);
+   var consistent=activeMembers.Select(m=>new{m.Id,m.FullName,visits=visitMap.GetValueOrDefault(m.Id)?.visits??0})
+     .Where(m=>m.visits>0).OrderByDescending(m=>m.visits).ThenBy(m=>m.FullName).Take(5).ToList();
+   var inactive=activeMembers.Select(m=>new{m.Id,m.FullName,visits=visitMap.GetValueOrDefault(m.Id)?.visits??0})
+     .Where(m=>m.visits==0).OrderBy(m=>m.FullName).Take(30).ToList();
+   var averageVisits=activeMembers.Count==0?0:Math.Round((decimal)attendance30.Where(x=>activeMembers.Any(m=>m.Id==x.memberId)).Sum(x=>x.visits)/activeMembers.Count,1);
+   return Results.Ok(new{members=total,activeMemberships=active,expiringMemberships=expiring,attendanceToday=attendance,monthPayments,asOf=today,
+    attendanceInsights=new{periodDays=30,averageVisitsPerActiveMember=averageVisits,mostConsistent=consistent,noVisits30Days=inactive,
+    noVisitsCount=activeMembers.Count(m=>!visitMap.ContainsKey(m.Id))}});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
   return app;
  }
