@@ -7,7 +7,7 @@ namespace GymSaaS.Api.Public;
 public sealed record WorkoutExercise(string Id,string Name,int Sets,int Reps,int RestSeconds);
 public sealed record WorkoutDay(string Id,string Name,int[] Weekdays,List<WorkoutExercise> Exercises);
 public sealed record WorkoutProgramInput(string Name,string? Description,bool IsActive,List<WorkoutDay> Days);
-public sealed record WorkoutProgressInput(string ExerciseId,int SetNumber,bool Completed);
+public sealed record WorkoutProgressInput(string ExerciseId,int SetNumber,bool Completed,decimal? WeightKg);
 public static class MemberWorkoutEndpoints {
  static bool Tenant(ClaimsPrincipal p,out Guid gym,out Guid member)=>Guid.TryParse(p.FindFirst("gym_id")?.Value,out gym)&Guid.TryParse(p.FindFirst("member_id")?.Value,out member);
  static bool Valid(WorkoutProgramInput input)=>!string.IsNullOrWhiteSpace(input.Name)&&input.Name.Trim().Length<=120&&input.Description?.Length<=1000&&input.Days is {Count:>0 and <=14}&&
@@ -20,7 +20,7 @@ public static class MemberWorkoutEndpoints {
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
    var programs=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==member).OrderByDescending(x=>x.CreatedAt).ToListAsync();
    var sessions=await db.MemberWorkoutSessions.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==member).OrderByDescending(x=>x.StartedAt).Take(40).ToListAsync();
-   return Results.Ok(new{programs=programs.Select(p=>new{p.Id,p.Name,p.Description,p.IsActive,p.CreatedAt,days=JsonSerializer.Deserialize<List<WorkoutDay>>(p.DaysJson)}),sessions=sessions.Select(s=>new{s.Id,s.ProgramId,s.DayId,s.StartedAt,s.FinishedAt,completed=JsonSerializer.Deserialize<List<string>>(s.CompletedJson)})});
+   return Results.Ok(new{programs=programs.Select(p=>new{p.Id,p.Name,p.Description,p.IsActive,p.CreatedAt,days=JsonSerializer.Deserialize<List<WorkoutDay>>(p.DaysJson)}),sessions=sessions.Select(s=>new{s.Id,s.ProgramId,s.DayId,s.StartedAt,s.FinishedAt,completed=JsonSerializer.Deserialize<List<string>>(s.CompletedJson),weights=JsonSerializer.Deserialize<Dictionary<string,decimal>>(s.WeightsJson)})});
   });
   group.MapPost("",async(WorkoutProgramInput input,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
@@ -55,7 +55,7 @@ public static class MemberWorkoutEndpoints {
    if(!days.Any(d=>d.Id==dayId))return Results.NotFound();
    var session=await db.MemberWorkoutSessions.Where(s=>s.GymId==gym&&s.MemberId==member&&s.ProgramId==programId&&s.DayId==dayId&&s.FinishedAt==null).OrderByDescending(s=>s.StartedAt).FirstOrDefaultAsync();
    if(session is null){session=new MemberWorkoutSession{GymId=gym,MemberId=member,ProgramId=programId,DayId=dayId};db.MemberWorkoutSessions.Add(session);await db.SaveChangesAsync();}
-   return Results.Ok(new{session.Id,session.DayId,session.StartedAt,completed=JsonSerializer.Deserialize<List<string>>(session.CompletedJson)});
+   return Results.Ok(new{session.Id,session.DayId,session.StartedAt,completed=JsonSerializer.Deserialize<List<string>>(session.CompletedJson),weights=JsonSerializer.Deserialize<Dictionary<string,decimal>>(session.WeightsJson)});
   });
   group.MapPut("/sessions/{sessionId:guid}/progress",async(Guid sessionId,WorkoutProgressInput input,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
@@ -65,12 +65,15 @@ public static class MemberWorkoutEndpoints {
    var program=await db.MemberWorkoutPrograms.AsNoTracking().SingleAsync(p=>p.Id==session.ProgramId&&p.GymId==gym&&p.MemberId==member);
    var day=(JsonSerializer.Deserialize<List<WorkoutDay>>(program.DaysJson)??[]).FirstOrDefault(d=>d.Id==session.DayId);
    var exercise=day?.Exercises.FirstOrDefault(e=>e.Id==input.ExerciseId);
-   if(exercise is null||input.SetNumber<1||input.SetNumber>exercise.Sets)return Results.BadRequest(new{message="Serie inválida."});
+   if(exercise is null||input.SetNumber<1||input.SetNumber>exercise.Sets||input.WeightKg is < 0 or > 2000)return Results.BadRequest(new{message="Serie inválida."});
    var list=(JsonSerializer.Deserialize<List<string>>(session.CompletedJson)??[]).ToHashSet();
    var key=input.ExerciseId+":"+input.SetNumber;
    if(input.Completed)list.Add(key);else list.Remove(key);
+   var weights=JsonSerializer.Deserialize<Dictionary<string,decimal>>(session.WeightsJson)??new();
+   if(input.WeightKg.HasValue)weights[key]=input.WeightKg.Value;
+   session.WeightsJson=JsonSerializer.Serialize(weights);
    session.CompletedJson=JsonSerializer.Serialize(list.OrderBy(x=>x));await db.SaveChangesAsync();
-   return Results.Ok(new{completed=list});
+   return Results.Ok(new{completed=list,weights});
   });
   group.MapPost("/sessions/{sessionId:guid}/finish",async(Guid sessionId,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
