@@ -25,7 +25,7 @@ public static class TrainerPortalEndpoints{
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
   var group=app.MapGroup("/api/trainer").RequireAuthorization(p=>p.RequireRole("Trainer"));
   group.MapGet("/overview",async(ClaimsPrincipal principal,GymDbContext db)=>{
-   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym)||!Guid.TryParse(principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value,out var uid))return Results.Unauthorized();
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym)||!Guid.TryParse((principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value??principal.FindFirst(ClaimTypes.NameIdentifier)?.Value),out var uid))return Results.Unauthorized();
    var account=await db.Users.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==uid&&x.GymId==gym&&x.Role=="Trainer");
    if(account?.TrainerId==null)return Results.Unauthorized();
    var members=await (from tm in db.TrainerMembers.AsNoTracking() join m in db.Members.AsNoTracking()
