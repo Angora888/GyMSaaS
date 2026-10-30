@@ -15,7 +15,11 @@ public static class OwnerDashboardEndpoints {
    var active=await db.Subscriptions.Where(s=>s.GymId==gymId&&s.StartDate<=today&&s.EndDate>=today).Select(s=>s.MemberId).Distinct().CountAsync();
    var expiring=await db.Subscriptions.Where(s=>s.GymId==gymId&&s.EndDate>=today&&s.EndDate<=today.AddDays(7)).Select(s=>s.MemberId).Distinct().CountAsync();
    var attendance=await db.Attendances.Where(a=>a.GymId==gymId&&a.CheckedInAt>=dayStart&&a.CheckedInAt<dayEnd).Select(a=>a.MemberId).Distinct().CountAsync();
-   return Results.Ok(new{members=total,activeMemberships=active,expiringMemberships=expiring,attendanceToday=attendance,asOf=today});
+   var monthStart=new DateTime(localNow.Year,localNow.Month,1);
+   var monthStartUtc=new DateTimeOffset(monthStart,tz.GetUtcOffset(monthStart));
+   var monthPayments=await db.MembershipPayments.AsNoTracking().Where(p=>p.GymId==gymId&&p.PaidAt>=monthStartUtc&&p.PaidAt<=DateTimeOffset.UtcNow)
+    .GroupBy(p=>p.Currency).Select(g=>new{currency=g.Key,total=g.Sum(p=>p.Amount)}).ToListAsync();
+   return Results.Ok(new{members=total,activeMemberships=active,expiringMemberships=expiring,attendanceToday=attendance,monthPayments,asOf=today});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
   return app;
  }
