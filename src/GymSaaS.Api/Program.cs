@@ -83,6 +83,7 @@ app.MapTrainerEndpoints();
 app.MapOwnerDashboard();
 app.MapExerciseCatalog();
 app.MapMembershipEndpoints();
+app.MapPayments();
 app.MapAttendanceEndpoints();
 app.MapGymPortal();
 app.MapGoogleMember();
