@@ -4,13 +4,13 @@ using GymSaaS.Api.Data;
 using GymSaaS.Api.Models;
 using Microsoft.EntityFrameworkCore;
 namespace GymSaaS.Api.Public;
-public sealed record WorkoutExercise(string Id,string Name,int Sets,int Reps,int RestSeconds);
+public sealed record WorkoutExercise(string Id,string Name,int Sets,int Reps,int RestSeconds,string? Category=null);
 public sealed record WorkoutDay(string Id,string Name,int[] Weekdays,List<WorkoutExercise> Exercises);
 public sealed record WorkoutProgramInput(string Name,string? Description,bool IsActive,List<WorkoutDay> Days);
 public sealed record WorkoutProgressInput(string ExerciseId,int SetNumber,bool Completed,decimal? WeightKg);
 public static class MemberWorkoutEndpoints {
  static bool Tenant(ClaimsPrincipal p,out Guid gym,out Guid member)=>Guid.TryParse(p.FindFirst("gym_id")?.Value,out gym)&Guid.TryParse(p.FindFirst("member_id")?.Value,out member);
- static bool Valid(WorkoutProgramInput input)=>!string.IsNullOrWhiteSpace(input.Name)&&input.Name.Trim().Length<=120&&input.Description?.Length<=1000&&input.Days is {Count:>0 and <=14}&&
+ public static bool Valid(WorkoutProgramInput input)=>!string.IsNullOrWhiteSpace(input.Name)&&input.Name.Trim().Length<=120&&input.Description?.Length<=1000&&input.Days is {Count:>0 and <=14}&&
  input.Days.All(d=>!string.IsNullOrWhiteSpace(d.Id)&&d.Id.Length<=80&&!string.IsNullOrWhiteSpace(d.Name)&&d.Name.Length<=80&&d.Weekdays is not null&&d.Weekdays.All(w=>w>=0&&w<=6)&&d.Exercises is {Count:>0 and <=30}&&
  d.Exercises.All(e=>!string.IsNullOrWhiteSpace(e.Id)&&e.Id.Length<=80&&!string.IsNullOrWhiteSpace(e.Name)&&e.Name.Length<=120&&e.Sets is >=1 and <=20&&e.Reps is >=1 and <=1000&&e.RestSeconds is >=0 and <=3600))&&
  input.Days.Select(d=>d.Id).Distinct().Count()==input.Days.Count&&input.Days.SelectMany(d=>d.Exercises.Select(e=>e.Id)).Distinct().Count()==input.Days.Sum(d=>d.Exercises.Count);
