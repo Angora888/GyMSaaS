@@ -60,6 +60,18 @@ public static class AttendanceEndpoints {
    return Results.Ok(new{entries,count=entries.Count,truncated=entries.Count==2000,from=start,to=end});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
 
+  app.MapPost("/api/member/checkout",async(ClaimsPrincipal principal,GymDbContext db)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym)||!Guid.TryParse(principal.FindFirst("member_id")?.Value,out var member))
+    return Results.Unauthorized();
+   var cutoff=DateTimeOffset.UtcNow.AddHours(-2);
+   var attendance=await db.Attendances.Where(a=>a.GymId==gym&&a.MemberId==member&&a.CheckedInAt>=cutoff&&a.CheckedOutAt==null)
+    .OrderByDescending(a=>a.CheckedInAt).FirstOrDefaultAsync();
+   if(attendance is null)return Results.Conflict(new{message="No tenés una entrada activa para finalizar."});
+   attendance.CheckedOutAt=DateTimeOffset.UtcNow;
+   await db.SaveChangesAsync();
+   return Results.Ok(new{message="Salida registrada correctamente.",checkedOutAt=attendance.CheckedOutAt});
+  }).RequireAuthorization(p=>p.RequireRole("Member"));
+
   app.MapPost("/api/member/checkin",async(CheckinRequest req,ClaimsPrincipal principal,GymDbContext db,IConfiguration cfg)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gymId)||!Guid.TryParse(principal.FindFirst("member_id")?.Value,out var memberId))return Results.Unauthorized();
    if(string.IsNullOrWhiteSpace(req.Code)||!Validate(gymId,req.Code,cfg["Jwt:Key"]!))
