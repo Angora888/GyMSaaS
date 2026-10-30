@@ -60,3 +60,17 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .membershipMessage{color:#95dfb4;background:#193828;border-radius:10px;padding:12px}
 @media(max-width:1050px){.membershipLayout{grid-template-columns:1fr}}
 @media(max-width:500px){.membershipForm{grid-template-columns:1fr}}
+
+
+/* Member profile: personal and emergency information */
+.mhProfileGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:22px 0}
+.mhProfileGrid>div{border:1px solid #403039;background:#141419;border-radius:14px;padding:15px;min-width:0}
+.mhProfileGrid small{display:block;color:#ac9ca5;margin-bottom:8px}
+.mhProfileGrid strong{display:block;font-size:15px;overflow-wrap:anywhere}
+.mhBmi{display:flex;flex-direction:column;gap:6px;background:linear-gradient(115deg,#481722,#21151b);border:1px solid #763345;border-radius:16px;padding:20px;margin:20px 0}
+.mhBmi span{color:#ffadb6;font-weight:700}.mhBmi strong{font-size:38px;color:#fff}
+.mhBmi small{color:#cbb4bb;line-height:1.5}
+.mhProfileForm input{color:#fff}.mhProfileActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.mhProfileActions .primary{flex:1;margin-top:0}.mhProfileActions .secondary{flex:1}
+.mhSignout{margin-top:18px}
+@media(max-width:380px){.mhProfileGrid{grid-template-columns:1fr}}
