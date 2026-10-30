@@ -222,3 +222,18 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .workoutSetRow input{width:100%;min-width:0;margin-top:5px;padding:10px}
 .workoutSetRow button{width:100%;min-height:45px}
 @media(max-width:390px){.workoutRest{top:0}.workoutSetRow{grid-template-columns:minmax(0,1fr) minmax(100px,1fr)}}
+
+
+/* Workout strength progress */
+.workoutProgressButton{display:block;width:100%;text-align:center;margin:5px 0 10px}
+.workoutStrength{min-width:0}.workoutStrength .workoutRow{margin-bottom:12px}
+.workoutStrength .workoutRow h2{font-size:22px;margin:0}
+.workoutStrength select{width:100%;min-width:0;margin-top:8px;padding:12px;background:#121318;color:#fff;border:1px solid #554047;border-radius:12px}
+.strengthMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0}
+.strengthMetrics>div{background:#14151a;border:1px solid #53323f;border-radius:12px;padding:12px 9px;min-width:0}
+.strengthMetrics small{display:block;font-size:11px;color:#b6a6ad;line-height:1.3}
+.strengthMetrics strong{display:block;font-size:clamp(16px,4.2vw,24px);color:#ff7489;margin-top:7px;overflow-wrap:anywhere}
+.strengthChart{display:block;width:100%;height:auto;background:#121318;border-radius:14px;margin:12px 0}
+.strengthHistory>div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #40303a;padding:10px 0}
+.strengthEmpty{padding:16px;border:1px dashed #694451;border-radius:12px}
+@media(max-width:390px){.strengthMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.strengthMetrics>div:last-child{grid-column:1/-1}}
