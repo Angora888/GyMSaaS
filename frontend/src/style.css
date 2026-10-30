@@ -262,3 +262,16 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .adminOverviewActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .adminOverviewActions .secondary{margin:0;flex:1;min-width:155px}
 @media(max-width:750px){.adminOverviewActions{flex-direction:column}.adminOverviewActions .secondary{width:100%;min-width:0;flex:auto}}
+
+
+/* Payments and revenue */
+.billingPanel{grid-column:1/-1}
+.billingSummary{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0 22px}
+.billingSummary>div{flex:1;min-width:170px;background:#16151b;padding:15px;border:1px solid #553640;border-radius:13px}
+.billingSummary small,.billingRow small{display:block;color:#b9acb2;margin-top:5px}
+.billingSummary strong{display:block;font-size:25px;color:#ff7e90;margin-top:8px}
+.billingRow{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:13px 0;border-bottom:1px solid #3d2c34}
+.billingRow>div{min-width:0;overflow-wrap:anywhere}
+.billingRow>div:last-child{text-align:right}
+.overviewRevenue{margin-bottom:18px}
+@media(max-width:750px){.billingPanel{min-width:0}.billingRow>div:last-child{text-align:left}.billingSummary{display:block}.billingSummary>div{margin-bottom:12px}}
