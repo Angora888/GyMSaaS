@@ -155,7 +155,7 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
  .layout .memberhead{flex-wrap:wrap}
  .layout .member{flex-wrap:wrap}
  .layout input,.layout select,.layout textarea{max-width:100%;min-width:0}
- .adminMobileNav{position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;z-index:100;left:0;right:0;bottom:0;width:100%;max-width:100%;padding:9px 7px calc(9px + env(safe-area-inset-bottom,0px));background:#1a1b21;border-top:1px solid #49323b;box-shadow:0 -8px 28px #0008}
+ .adminMobileNav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;z-index:100;left:0;right:0;bottom:0;width:100%;max-width:100%;padding:9px 7px calc(9px + env(safe-area-inset-bottom,0px));background:#1a1b21;border-top:1px solid #49323b;box-shadow:0 -8px 28px #0008}
  .adminMobileNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:58px;padding:7px 2px;border:0;background:transparent;color:#a7a7b3;border-radius:13px;font:inherit}
  .adminMobileNav button span{font-size:23px;line-height:1}
  .adminMobileNav button small{font-size:clamp(10px,2.5vw,12px);font-weight:650;white-space:nowrap}
@@ -165,3 +165,16 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
  .layout main{padding-left:13px!important;padding-right:13px!important}
  .layout .metrics{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* Trainers administration */
+.trainerLayout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.trainerForm{display:grid;gap:12px;margin-bottom:24px}
+.trainerForm select{display:block;width:100%;min-width:0;margin-top:7px;border-radius:11px;padding:13px;background:#101013;border:1px solid #554047;color:#fff}
+.trainerForm .primary{margin-top:5px}
+.trainerCard{padding:15px 0;border-top:1px solid #493038}
+.trainerCard>strong,.trainerCard>small{display:block}.trainerCard>small{color:#b4a7aa;margin-top:6px}
+.trainerMember{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;min-width:0}
+.trainerMember span{overflow-wrap:anywhere;min-width:0}
+.trainerNote{font-size:13px}
+@media(max-width:950px){.trainerLayout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:750px){.adminMobileNav button{padding:7px 1px}.adminMobileNav button span{font-size:20px}.adminMobileNav button small{font-size:clamp(9px,2.2vw,11px)}}
