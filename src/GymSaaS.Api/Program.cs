@@ -30,6 +30,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
  ValidateIssuer=true,ValidIssuer=jwtIssuer,ValidateAudience=true,ValidAudience=jwtAudience,
  ValidateLifetime=true,ValidateIssuerSigningKey=true,
  IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),ClockSkew=TimeSpan.FromSeconds(30)
+},o.Events=new JwtBearerEvents {
+ OnTokenValidated=async context=>{
+  if(!context.Principal?.IsInRole("Trainer")??true)return;
+  var idText=context.Principal.FindFirstValue(JwtRegisteredClaimNames.Sub)??context.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+  var gymText=context.Principal.FindFirstValue("gym_id");
+  var versionText=context.Principal.FindFirstValue("session_version");
+  if(!Guid.TryParse(idText,out var id)||!Guid.TryParse(gymText,out var gym)||!int.TryParse(versionText,out var version)){context.Fail("Invalid trainer session.");return;}
+  var db=context.HttpContext.RequestServices.GetRequiredService<GymDbContext>();
+  var current=await db.Users.AsNoTracking().Where(u=>u.Id==id&&u.GymId==gym&&u.Role=="Trainer").Select(u=>(int?)u.SessionVersion).SingleOrDefaultAsync();
+  if(current==null||current.Value!=version)context.Fail("Trainer session was revoked.");
+ }
 });
 builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options=>{
