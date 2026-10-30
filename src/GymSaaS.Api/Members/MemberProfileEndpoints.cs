@@ -19,7 +19,9 @@ public static class MemberProfileEndpoints{
     .Take(30).Select(x=>x.CheckedInAt).ToListAsync();
    var workouts=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==memberId).OrderByDescending(x=>x.CreatedAt)
     .Select(x=>new{x.Id,x.Name,x.IsActive,x.CreatedAt}).ToListAsync();
-   return Results.Ok(new{member,subscriptions=subscriptions.Select(s=>new{s.Id,s.plan,s.Price,s.Currency,s.StartDate,s.EndDate,
+   var measurements=await db.MemberMeasurements.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==memberId).OrderByDescending(x=>x.RecordedAt).Take(90).Select(x=>new{x.WeightKg,x.RecordedAt}).ToListAsync();
+   var completedSessions=await db.MemberWorkoutSessions.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==memberId&&x.FinishedAt!=null).OrderByDescending(x=>x.FinishedAt).Take(365).Select(x=>x.FinishedAt).ToListAsync();
+   return Results.Ok(new{measurements=measurements.OrderBy(x=>x.RecordedAt),completedSessions,member,subscriptions=subscriptions.Select(s=>new{s.Id,s.plan,s.Price,s.Currency,s.StartDate,s.EndDate,
     paid=payments.Where(p=>p.SubscriptionId==s.Id).Sum(p=>p.Amount),balance=Math.Max(0,s.Price-payments.Where(p=>p.SubscriptionId==s.Id).Sum(p=>p.Amount))}),
     payments,trainers,attendances,workouts});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
