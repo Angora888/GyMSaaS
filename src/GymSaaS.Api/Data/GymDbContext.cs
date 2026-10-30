@@ -11,6 +11,7 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
  public DbSet<MemberSubscription> Subscriptions=>Set<MemberSubscription>();
  public DbSet<Attendance> Attendances=>Set<Attendance>();
  public DbSet<Trainer> Trainers=>Set<Trainer>();
+ public DbSet<TrainerMember> TrainerMembers=>Set<TrainerMember>();
  public DbSet<WorkoutRoutine> Routines=>Set<WorkoutRoutine>();
  protected override void OnModelCreating(ModelBuilder b){
   b.Entity<Gym>().HasIndex(x=>x.Slug).IsUnique();
@@ -27,6 +28,9 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
   b.Entity<MembershipPlan>().Property(x=>x.Price).HasPrecision(12,2);
   b.Entity<Member>().Property(x=>x.WeightKg).HasPrecision(6,2);
   b.Entity<Member>().Property(x=>x.HeightCm).HasPrecision(5,1);
+  b.Entity<TrainerMember>().HasIndex(x=>new{x.GymId,x.TrainerId,x.MemberId}).IsUnique();
+  b.Entity<TrainerMember>().HasOne<Trainer>().WithMany().HasForeignKey(x=>x.TrainerId).OnDelete(DeleteBehavior.Cascade);
+  b.Entity<TrainerMember>().HasOne<Member>().WithMany().HasForeignKey(x=>new{x.GymId,x.MemberId}).HasPrincipalKey(m=>new{m.GymId,m.Id}).OnDelete(DeleteBehavior.Cascade);
   b.Entity<MemberMeasurement>().Property(x=>x.WeightKg).HasPrecision(6,2);
   b.Entity<MemberMeasurement>().Property(x=>x.HeightCm).HasPrecision(5,1);
   b.Entity<MemberMeasurement>().HasIndex(x=>new{x.GymId,x.MemberId,x.RecordedAt});
