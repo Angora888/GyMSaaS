@@ -41,8 +41,8 @@ public static class TrainerPortalEndpoints{
    var member=await db.Members.AsNoTracking().Where(x=>x.GymId==gym&&x.Id==memberId).Select(x=>new{x.Id,x.FullName,x.WeightKg,x.HeightCm}).SingleAsync();
    var measurements=await db.MemberMeasurements.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==memberId).OrderByDescending(x=>x.RecordedAt)
     .Take(30).Select(x=>new{x.WeightKg,x.HeightCm,x.RecordedAt}).ToListAsync();
-   var programs=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==memberId).OrderByDescending(x=>x.CreatedAt).Select(x=>new{x.Name,x.IsActive}).ToListAsync();
-   return Results.Ok(new{member,measurements,programs});
+   var programs=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==memberId).OrderByDescending(x=>x.CreatedAt).Select(x=>new{x.Id,x.Name,x.Description,x.IsActive,x.DaysJson}).ToListAsync();
+   return Results.Ok(new{member,measurements,programs=programs.Select(x=>new{x.Id,x.Name,x.Description,x.IsActive,days=System.Text.Json.JsonSerializer.Deserialize<List<WorkoutDay>>(x.DaysJson)})});
   });
   group.MapPost("/members/{memberId:guid}/routines",async(Guid memberId,WorkoutProgramInput input,ClaimsPrincipal principal,GymDbContext db)=>{
    if(!await Allowed(principal,db,memberId))return Results.Forbid();
@@ -51,6 +51,18 @@ public static class TrainerPortalEndpoints{
    if(input.IsActive){var others=await db.MemberWorkoutPrograms.Where(x=>x.GymId==gym&&x.MemberId==memberId&&x.IsActive).ToListAsync();foreach(var p in others)p.IsActive=false;}
    var program=new MemberWorkoutProgram{GymId=gym,MemberId=memberId,Name=input.Name.Trim(),Description=input.Description?.Trim(),IsActive=input.IsActive,DaysJson=System.Text.Json.JsonSerializer.Serialize(input.Days)};
    db.MemberWorkoutPrograms.Add(program);await db.SaveChangesAsync();return Results.Ok(new{program.Id});
+  });
+  group.MapPut("/members/{memberId:guid}/routines/{programId:guid}",async(Guid memberId,Guid programId,WorkoutProgramInput input,ClaimsPrincipal principal,GymDbContext db)=>{
+   if(!await Allowed(principal,db,memberId))return Results.Forbid();
+   if(!MemberWorkoutEndpoints.Valid(input))return Results.BadRequest(new{message="Revisá los días, ejercicios y cantidades."});
+   var gym=Guid.Parse(principal.FindFirst("gym_id")!.Value);
+   var program=await db.MemberWorkoutPrograms.SingleOrDefaultAsync(x=>x.Id==programId&&x.GymId==gym&&x.MemberId==memberId);
+   if(program is null)return Results.NotFound();
+   if(await db.MemberWorkoutSessions.AnyAsync(x=>x.GymId==gym&&x.MemberId==memberId&&x.ProgramId==programId&&x.FinishedAt==null))
+    return Results.Conflict(new{message="El alumno tiene un entrenamiento en curso. Debe finalizarlo antes de editar la rutina."});
+   if(input.IsActive){var others=await db.MemberWorkoutPrograms.Where(x=>x.GymId==gym&&x.MemberId==memberId&&x.Id!=programId&&x.IsActive).ToListAsync();foreach(var other in others)other.IsActive=false;}
+   program.Name=input.Name.Trim();program.Description=input.Description?.Trim();program.IsActive=input.IsActive;program.DaysJson=System.Text.Json.JsonSerializer.Serialize(input.Days);
+   await db.SaveChangesAsync();return Results.Ok(new{program.Id,program.Name});
   });
   return app;
  }
