@@ -19,7 +19,7 @@ export default function MembershipsPanel({token,members}){
   setPayment({subscriptionId:'',amount:'',method:'SINPE',note:''});await refresh();setMessage('Pago registrado correctamente.');
  }catch(e){setError(e.message)}finally{setSaving(false)}}
  const fmt=(n,currency)=>new Intl.NumberFormat('es-CR',{style:'currency',currency}).format(n);
- const today=new Date().toLocaleDateString('en-CA',{timeZone:'America/Costa_Rica'});
+ const today=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Costa_Rica'});
  const plusDays=(date,days)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)};
  const status=s=>s.endDate<today?'expired':s.endDate<=plusDays(today,7)?'expiring':'current';
  const visibleSubs=billing.subscriptions.filter(s=>{
