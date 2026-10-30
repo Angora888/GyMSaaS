@@ -34,8 +34,11 @@ public static class AttendanceEndpoints {
 
   app.MapGet("/api/admin/attendance/today",async(ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gymId))return Results.Unauthorized();
-   var today=DateTimeOffset.UtcNow.Date;
-   var entries=await db.Attendances.AsNoTracking().Where(a=>a.GymId==gymId&&a.CheckedInAt>=new DateTimeOffset(today,TimeSpan.Zero))
+   var tz=TimeZoneInfo.FindSystemTimeZoneById("America/Costa_Rica");
+   var localDate=TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow,tz).Date;
+   var begin=new DateTimeOffset(localDate,tz.GetUtcOffset(localDate)).ToUniversalTime();
+   var finish=begin.AddDays(1);
+   var entries=await db.Attendances.AsNoTracking().Where(a=>a.GymId==gymId&&a.CheckedInAt>=begin&&a.CheckedInAt<finish)
      .Join(db.Members.AsNoTracking(),a=>new{a.GymId,Id=a.MemberId},m=>new{m.GymId,m.Id},(a,m)=>new{m.FullName,a.CheckedInAt})
      .OrderByDescending(x=>x.CheckedInAt).Take(100).ToListAsync();
    return Results.Ok(new{count=entries.Count,entries});
