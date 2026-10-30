@@ -16,6 +16,7 @@ public sealed class MemberWorkoutSession {
  public Guid ProgramId {get;set;}
  public required string DayId {get;set;}
  public string CompletedJson {get;set;}="[]";
+ public string WeightsJson {get;set;}="{}";
  public DateTimeOffset StartedAt {get;set;}=DateTimeOffset.UtcNow;
  public DateTimeOffset? FinishedAt {get;set;}
 }
