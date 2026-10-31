@@ -53,7 +53,7 @@ export default function MemberHome({token,onLogout}){
  const days=Array.from({length:7},(_,i)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay()+i);return d});
  const attended=new Set(data.attendance.map(x=>new Date(x).toLocaleDateString('en-CA')));
  return <div className="memberHome"><div className="mhLayout">
-  <div className="mhTop"><div><small>{data.gym.name}</small><h1>¡Hola, <span>{data.member.fullName.split(' ')[0]}</span>!</h1><p>¡Seguí entrenando con fuerza!</p></div><button className="mhLogout" onClick={onLogout}>Salir ↗</button></div>
+  <div className="mhTop"><div>{data.gym.brandLogoUrl&&<img className="mhGymLogo" src={data.gym.brandLogoUrl} alt={"Logo de "+data.gym.name}/>}<small>{data.gym.name}</small><h1>¡Hola, <span>{data.member.fullName.split(' ')[0]}</span>!</h1><p>{data.gym.brandTagline||"¡Seguí entrenando con fuerza!"}</p></div><button className="mhLogout" onClick={onLogout}>Salir ↗</button></div>
   {checkinStatus&&<div className="mhCard" role="status"><strong>{checkinStatus}</strong></div>}
   {tab==='inicio'?<><div className="mhHero"><span className="mhHeroIcon">▦</span><div><strong>Tu asistencia</strong><p>Para registrar tu entrada, escaneá el QR temporal de recepción con la cámara de tu celular.</p></div></div>
    <div className="mhCard"><h2>✓ Asistencia semanal</h2><div className="mhDays">{days.map((d,i)=>{const key=d.toLocaleDateString('en-CA');return <div key={i}><small>{['D','L','M','M','J','V','S'][i]}</small><span className={attended.has(key)?'mhAttended':''}>{attended.has(key)?'✓':d.getDate()}</span></div>})}</div><p className="mhHint">Asistencias registradas en el sistema durante los últimos 14 días.</p></div>
