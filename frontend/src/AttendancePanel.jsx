@@ -2,15 +2,15 @@ import React,{useEffect,useState} from 'react';
 import {QRCodeSVG} from 'qrcode.react';
 const API=(import.meta.env.VITE_API_URL||'').replace(/\/$/,'');
 export default function AttendancePanel({token}){
- const [history,setHistory]=useState([]),[historyError,setHistoryError]=useState(''),[search,setSearch]=useState(''),[from,setFrom]=useState(()=>{const d=new Date(Date.now()-6*86400000);return d.toLocaleDateString('sv-SE',{timeZone:'America/Costa_Rica'})}),[to,setTo]=useState(()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Costa_Rica'})),[qr,setQr]=useState(null),[entries,setEntries]=useState([]),[count,setCount]=useState(0),[error,setError]=useState(''),[seconds,setSeconds]=useState(0);
+ const [present,setPresent]=useState({count:0,members:[]}),[history,setHistory]=useState([]),[historyError,setHistoryError]=useState(''),[search,setSearch]=useState(''),[from,setFrom]=useState(()=>{const d=new Date(Date.now()-6*86400000);return d.toLocaleDateString('sv-SE',{timeZone:'America/Costa_Rica'})}),[to,setTo]=useState(()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Costa_Rica'})),[qr,setQr]=useState(null),[entries,setEntries]=useState([]),[count,setCount]=useState(0),[error,setError]=useState(''),[seconds,setSeconds]=useState(0);
  useEffect(()=>{
   let alive=true;
   async function load(){
    try{
-    const [a,b]=await Promise.all(['/api/admin/attendance/qr','/api/admin/attendance/today'].map(path=>fetch(API+path,{headers:{Authorization:'Bearer '+token}})));
-    if(!a.ok||!b.ok)throw Error('No fue posible cargar asistencia');
-    const [code,history]=await Promise.all([a.json(),b.json()]);
-    if(alive){setQr(code);setEntries(history.entries);setCount(history.count);setError('')}
+    const [a,b,p]=await Promise.all(['/api/admin/attendance/qr','/api/admin/attendance/today','/api/admin/attendance/present'].map(path=>fetch(API+path,{headers:{Authorization:'Bearer '+token}})));
+    if(!a.ok||!b.ok||!p.ok)throw Error('No fue posible cargar asistencia');
+    const [code,history,presence]=await Promise.all([a.json(),b.json(),p.json()]);
+    if(alive){setPresent(presence);setQr(code);setEntries(history.entries);setCount(history.count);setError('')}
    }catch(e){if(alive)setError(e.message)}
   }
   load();const refresh=setInterval(load,10000);const tick=setInterval(()=>{if(alive)setSeconds(Date.now())},1000);
@@ -31,6 +31,7 @@ export default function AttendancePanel({token}){
  <p>Mostrá esta pantalla en la recepción del gimnasio. El código cambia cada 30 segundos y no es el QR permanente de registro.</p>
  {error&&<p className="error" role="alert">{error}</p>}
  {qr&&<div className="receptionQr"><div className="qrWhite"><QRCodeSVG value={link} size={230} includeMargin/></div><strong>{qr.name}</strong><p>Se renueva en {expires} segundos</p></div>}
+ <section className="attendancePresent"><h2>Dentro del gimnasio ahora: {present.count}</h2><p>Miembros con entrada QR en las últimas dos horas y sin salida registrada. Se actualiza cada 10 segundos.</p>{present.members?.length?present.members.map(m=><div className="membershipRow" key={m.id}><strong>{m.fullName}</strong><span>Entró a las {new Date(m.checkedInAt).toLocaleTimeString('es-CR',{timeZone:'America/Costa_Rica',hour:'2-digit',minute:'2-digit'})}</span></div>):<p>No hay personas registradas como presentes.</p>}</section>
  <h2>Entradas de hoy: {count}</h2>
  {entries.length?entries.map((item,i)=><div className="membershipRow" key={i}><strong>{item.fullName}</strong><span>{new Date(item.checkedInAt).toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'})}</span></div>):<p>Sin asistencias registradas hoy.</p>}
  <section className="attendanceHistory"><h2>Historial de asistencias</h2><div className="attendanceFilters"><label>Desde<input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label>Hasta<input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label><label>Buscar miembro<input type="search" value={search} placeholder="Nombre del miembro" onChange={e=>setSearch(e.target.value)}/></label></div>{historyError&&<p className="error" role="alert">{historyError}</p>}<p>{visibleHistory.length} registros encontrados</p>{visibleHistory.slice(0,200).map((item,i)=><div className="membershipRow" key={item.id+'-'+item.checkedInAt+'-'+i}><strong>{item.fullName}</strong><span>{new Date(item.checkedInAt).toLocaleString('es-CR',{timeZone:'America/Costa_Rica',dateStyle:'medium',timeStyle:'short'})}</span></div>)}{!visibleHistory.length&&!historyError&&<p>No hay entradas para este filtro.</p>}{visibleHistory.length>200&&<small>Mostrando los primeros 200 resultados. Reducí el rango para ver los demás.</small>}</section>
