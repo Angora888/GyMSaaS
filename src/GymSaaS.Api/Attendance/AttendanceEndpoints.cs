@@ -44,6 +44,18 @@ public static class AttendanceEndpoints {
    return Results.Ok(new{count=entries.Count,entries});
   }).RequireAuthorization(p=>p.RequireRole("Owner"));
 
+  app.MapGet("/api/admin/attendance/present",async(ClaimsPrincipal principal,GymDbContext db)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
+   var cutoff=DateTimeOffset.UtcNow.AddHours(-2);
+   var entries=await db.Attendances.AsNoTracking()
+    .Where(a=>a.GymId==gym&&a.CheckedInAt>=cutoff&&a.CheckedOutAt==null)
+    .Join(db.Members.AsNoTracking(),a=>new{a.GymId,Id=a.MemberId},m=>new{m.GymId,m.Id},
+     (a,m)=>new{m.Id,m.FullName,a.CheckedInAt})
+    .OrderByDescending(x=>x.CheckedInAt).ToListAsync();
+   var present=entries.GroupBy(x=>x.Id).Select(g=>g.First()).OrderByDescending(x=>x.CheckedInAt).ToList();
+   return Results.Ok(new{count=present.Count,members=present,windowMinutes=120});
+  }).RequireAuthorization(p=>p.RequireRole("Owner"));
+
   app.MapGet("/api/admin/attendance/history",async(DateOnly? from,DateOnly? to,ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
    var zone=TimeZoneInfo.FindSystemTimeZoneById("America/Costa_Rica");
