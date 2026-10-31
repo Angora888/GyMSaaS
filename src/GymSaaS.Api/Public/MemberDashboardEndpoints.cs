@@ -11,7 +11,7 @@ public static class MemberDashboardEndpoints {
      .Select(x=>new{x.Id,x.FullName,x.Email,x.Phone,x.EmergencyPhone,x.WeightKg,x.HeightCm}).FirstOrDefaultAsync();
    if(member is null)return Results.Unauthorized();
    var gym=await db.Gyms.AsNoTracking().Where(x=>x.Id==gymId&&x.IsActive)
-     .Select(x=>new{x.Name,x.Slug}).FirstOrDefaultAsync();
+     .Select(x=>new{x.Name,x.Slug,x.BrandLogoUrl,x.BrandTagline}).FirstOrDefaultAsync();
    if(gym is null)return Results.Unauthorized();
    var today=DateOnly.FromDateTime(DateTime.UtcNow);
    var subscription=await (from s in db.Subscriptions.AsNoTracking()
