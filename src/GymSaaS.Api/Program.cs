@@ -94,6 +94,7 @@ app.MapMemberProfileAdmin();
 app.MapTrainerEndpoints();
 app.MapTrainerPortal();
 app.MapOwnerDashboard();
+app.MapGymBranding();
 app.MapExerciseCatalog();
 app.MapMembershipEndpoints();
 app.MapPayments();
