@@ -5,6 +5,11 @@ public sealed class Gym {
     public required string Name { get; set; }
     public required string Slug { get; set; }
     public bool IsActive { get; set; } = true;
+    public string BrandPrimary { get; set; } = "#e64b6a";
+    public string BrandAccent { get; set; } = "#f0b45b";
+    public string BrandBackground { get; set; } = "#12141b";
+    public string BrandTagline { get; set; } = "Entrená con nosotros. Tu progreso comienza aquí.";
+    public string? BrandLogoUrl { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 public sealed class Member {
