@@ -321,3 +321,5 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .mhTrainingNowRow h2{margin:0}
 .mhTrainingNowRow strong{color:#58b0e6;font-size:clamp(29px,6vw,42px);font-weight:800}
 .mhTrainingNow p{margin:9px 0 0;color:#9aa5b6;font-size:14px}
+
+.attendancePresent{margin:22px 0;padding:16px;border:1px solid rgba(75,166,215,.35);background:rgba(75,166,215,.06);border-radius:16px}.attendancePresent h2{margin-top:0}.attendancePresent .membershipRow{gap:14px;flex-wrap:wrap}
