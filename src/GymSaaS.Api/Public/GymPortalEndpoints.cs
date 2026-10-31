@@ -21,7 +21,7 @@ public static class GymPortalEndpoints {
  }
  public static IEndpointRouteBuilder MapGymPortal(this IEndpointRouteBuilder app){
   app.MapGet("/api/public/gyms/{slug}",async(string slug,GymDbContext db)=>{
-   var gym=await db.Gyms.AsNoTracking().Where(g=>g.Slug==slug&&g.IsActive).Select(g=>new{g.Name,g.Slug}).SingleOrDefaultAsync();
+   var gym=await db.Gyms.AsNoTracking().Where(g=>g.Slug==slug&&g.IsActive).Select(g=>new{g.Name,g.Slug,g.BrandPrimary,g.BrandAccent,g.BrandBackground,g.BrandTagline,g.BrandLogoUrl}).SingleOrDefaultAsync();
    return gym is null?Results.NotFound():Results.Ok(gym);
   });
   app.MapPost("/api/public/gyms/{slug}/signup",async(string slug,MemberSignup input,GymDbContext db,IConfiguration config,IPasswordHasher<MemberIdentity> hasher)=>{
