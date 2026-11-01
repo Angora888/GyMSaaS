@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "description": "Official exercise illustration inventory; matching names and paths from existing GymSaaS catalog. Files are added separately after quality review.",
+  "count": 55,
+  "exercises": [
+    {
+      "category": "Antebrazo",
+      "name": "Curl inverso de antebrazo",
+      "path": "/ejercicios/antebrazo/curl-inverso-de-antebrazo.webp"
+    },
+    {
+      "category": "Antebrazo",
+      "name": "Extensión de muñeca con barra",
+      "path": "/ejercicios/antebrazo/extension-de-muneca-con-barra.webp"
+    },
+    {
+      "category": "Antebrazo",
+      "name": "Flexión de muñeca con barra",
+      "path": "/ejercicios/antebrazo/flexion-de-muneca-con-barra.webp"
+    },
+    {
+      "category": "Bíceps",
+      "name": "Curl alterno con mancuernas",
+      "path": "/ejercicios/biceps/curl-alterno-con-mancuernas.webp"
+    },
+    {
+      "category": "Bíceps",
+      "name": "Curl banco Scott",
+      "path": "/ejercicios/biceps/curl-banco-scott.webp"
+    },
+    {
+      "category": "Bíceps",
+      "name": "Curl de bíceps con barra Z",
+      "path": "/ejercicios/biceps/curl-de-biceps-con-barra-z.webp"
+    },
+    {
+      "category": "Bíceps",
+      "name": "Curl de bíceps con barra plana",
+      "path": "/ejercicios/biceps/curl-de-biceps-con-barra-plana.webp"
+    },
+    {
+      "category": "Bíceps",
+      "name": "Curl de bíceps en polea baja",
+      "path": "/ejercicios/biceps/curl-de-biceps-en-polea-baja.webp"
+    },
+    {
+      "category": "Bíceps",
+      "name": "Curl invertido",
+      "path": "/ejercicios/biceps/curl-invertido.webp"
+    },
+    {
+      "category": "Bíceps",
+      "name": "Curl martillo",
+      "path": "/ejercicios/biceps/curl-martillo.webp"
+    },
+    {
+      "category": "Espalda",
+      "name": "Dominadas asistidas",
+      "path": "/ejercicios/espalda/dominadas-asistidas.webp"
+    },
+    {
+      "category": "Espalda",
+      "name": "Jalón al pecho agarre abierto",
+      "path": "/ejercicios/espalda/jalon-al-pecho-agarre-abierto.webp"
+    },
+    {
+      "category": "Espalda",
+      "name": "Jalón al pecho agarre cerrado",
+      "path": "/ejercicios/espalda/jalon-al-pecho-agarre-cerrado.webp"
+    },
+    {
+      "category": "Espalda",
+      "name": "Pullover en polea",
+      "path": "/ejercicios/espalda/pullover-en-polea.webp"
+    },
+    {
+      "category": "Espalda",
+      "name": "Remo con barra",
+      "path": "/ejercicios/espalda/remo-con-barra.webp"
+    },
+    {
+      "category": "Espalda",
+      "name": "Remo en máquina",
+      "path": "/ejercicios/espalda/remo-en-maquina.webp"
+    },
+    {
+      "category": "Espalda",
+      "name": "Remo sentado en polea",
+      "path": "/ejercicios/espalda/remo-sentado-en-polea.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Deltoide posterior con mancuerna",
+      "path": "/ejercicios/hombros/deltoide-posterior-con-mancuerna.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Deltoide posterior en polea",
+      "path": "/ejercicios/hombros/deltoide-posterior-en-polea.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Elevación frontal con disco",
+      "path": "/ejercicios/hombros/elevacion-frontal-con-disco.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Elevación frontal con mancuernas",
+      "path": "/ejercicios/hombros/elevacion-frontal-con-mancuernas.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Elevación lateral con mancuernas",
+      "path": "/ejercicios/hombros/elevacion-lateral-con-mancuernas.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Press militar con barra",
+      "path": "/ejercicios/hombros/press-militar-con-barra.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Press militar con mancuernas",
+      "path": "/ejercicios/hombros/press-militar-con-mancuernas.webp"
+    },
+    {
+      "category": "Hombros",
+      "name": "Press militar en máquina",
+      "path": "/ejercicios/hombros/press-militar-en-maquina.webp"
+    },
+    {
+      "category": "Pantorrillas",
+      "name": "Elevación de talones en Smith",
+      "path": "/ejercicios/pantorrillas/elevacion-de-talones-en-smith.webp"
+    },
+    {
+      "category": "Pantorrillas",
+      "name": "Elevación de talones sentado",
+      "path": "/ejercicios/pantorrillas/elevacion-de-talones-sentado.webp"
+    },
+    {
+      "category": "Pantorrillas",
+      "name": "Pantorrillas en prensa",
+      "path": "/ejercicios/pantorrillas/pantorrillas-en-prensa.webp"
+    },
+    {
+      "category": "Pecho",
+      "name": "Aperturas en cross over",
+      "path": "/ejercicios/pecho/aperturas-en-cross-over.webp"
+    },
+    {
+      "category": "Pecho",
+      "name": "Peck deck",
+      "path": "/ejercicios/pecho/peck-deck.webp"
+    },
+    {
+      "category": "Pecho",
+      "name": "Press en máquina",
+      "path": "/ejercicios/pecho/press-en-maquina.webp"
+    },
+    {
+      "category": "Pecho",
+      "name": "Press inclinado con barra",
+      "path": "/ejercicios/pecho/press-inclinado-con-barra.webp"
+    },
+    {
+      "category": "Pecho",
+      "name": "Press inclinado con mancuernas",
+      "path": "/ejercicios/pecho/press-inclinado-con-mancuernas.webp"
+    },
+    {
+      "category": "Pecho",
+      "name": "Press plano con barra",
+      "path": "/ejercicios/pecho/press-plano-con-barra.webp"
+    },
+    {
+      "category": "Pecho",
+      "name": "Press plano con mancuernas",
+      "path": "/ejercicios/pecho/press-plano-con-mancuernas.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Abducción en máquina",
+      "path": "/ejercicios/piernas-y-gluteos/abduccion-en-maquina.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Aducción en máquina",
+      "path": "/ejercicios/piernas-y-gluteos/aduccion-en-maquina.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Curl femoral acostado",
+      "path": "/ejercicios/piernas-y-gluteos/curl-femoral-acostado.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Curl femoral sentado",
+      "path": "/ejercicios/piernas-y-gluteos/curl-femoral-sentado.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Extensión de piernas",
+      "path": "/ejercicios/piernas-y-gluteos/extension-de-piernas.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Hip thrust",
+      "path": "/ejercicios/piernas-y-gluteos/hip-thrust.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Patada de glúteos",
+      "path": "/ejercicios/piernas-y-gluteos/patada-de-gluteos.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Prensa de piernas",
+      "path": "/ejercicios/piernas-y-gluteos/prensa-de-piernas.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Sentadilla en Smith",
+      "path": "/ejercicios/piernas-y-gluteos/sentadilla-en-smith.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Sentadilla hack",
+      "path": "/ejercicios/piernas-y-gluteos/sentadilla-hack.webp"
+    },
+    {
+      "category": "Piernas y glúteos",
+      "name": "Sentadilla libre",
+      "path": "/ejercicios/piernas-y-gluteos/sentadilla-libre.webp"
+    },
+    {
+      "category": "Trapecio",
+      "name": "Encogimiento con barra",
+      "path": "/ejercicios/trapecio/encogimiento-con-barra.webp"
+    },
+    {
+      "category": "Trapecio",
+      "name": "Encogimiento con mancuernas",
+      "path": "/ejercicios/trapecio/encogimiento-con-mancuernas.webp"
+    },
+    {
+      "category": "Trapecio",
+      "name": "Encogimiento en máquina Smith",
+      "path": "/ejercicios/trapecio/encogimiento-en-maquina-smith.webp"
+    },
+    {
+      "category": "Tríceps",
+      "name": "Extensión de tríceps con mancuerna",
+      "path": "/ejercicios/triceps/extension-de-triceps-con-mancuerna.webp"
+    },
+    {
+      "category": "Tríceps",
+      "name": "Extensión de tríceps en polea",
+      "path": "/ejercicios/triceps/extension-de-triceps-en-polea.webp"
+    },
+    {
+      "category": "Tríceps",
+      "name": "Extensión unilateral en polea",
+      "path": "/ejercicios/triceps/extension-unilateral-en-polea.webp"
+    },
+    {
+      "category": "Tríceps",
+      "name": "Fondos de tríceps",
+      "path": "/ejercicios/triceps/fondos-de-triceps.webp"
+    },
+    {
+      "category": "Tríceps",
+      "name": "Patada de tríceps",
+      "path": "/ejercicios/triceps/patada-de-triceps.webp"
+    },
+    {
+      "category": "Tríceps",
+      "name": "Press francés con barra Z",
+      "path": "/ejercicios/triceps/press-frances-con-barra-z.webp"
+    }
+  ]
+}
