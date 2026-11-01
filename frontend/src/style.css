@@ -394,3 +394,5 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .catalogImagePreview .exerciseSchematic small{display:none}
 .catalogImagePreview .exerciseSchematic svg{width:100%;height:100%}
 .coachExercise .exerciseSchematic{max-width:220px;margin:10px 0}
+
+.routineDefaults{padding:16px;border:1px solid #805061;border-radius:14px;background:#231c27;margin:14px 0}.routineDefaults>strong{display:block;color:#ff9aad;margin-bottom:12px}.routineDefaults small{display:block;color:#c1b6c0;margin-top:10px}.routineDefaults .workoutFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.routineDefaults input{width:100%;min-width:0}@media(max-width:420px){.routineDefaults .workoutFields{gap:6px}.routineDefaults label{font-size:12px}}
