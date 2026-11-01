@@ -8,4 +8,5 @@ public sealed class ExerciseCatalogItem {
  public int DefaultReps {get;set;}=10;
  public int DefaultRestSeconds {get;set;}=120;
  public string? Notes {get;set;}
+ public string? ImageUrl {get;set;}
 }
