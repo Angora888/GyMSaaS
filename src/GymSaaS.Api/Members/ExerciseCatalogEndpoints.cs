@@ -5,21 +5,33 @@ using GymSaaS.Api.Public;
 using Microsoft.EntityFrameworkCore;
 namespace GymSaaS.Api.Members;
 public sealed record CatalogEntry(string Category,string Name,int DefaultSets=4,int DefaultReps=10,int DefaultRestSeconds=120,string? Notes=null);
+public sealed record CatalogImageInput(string? ImageUrl);
 public sealed record CatalogImport(List<CatalogEntry> Exercises);
 public static class ExerciseCatalogEndpoints {
  public static IEndpointRouteBuilder MapExerciseCatalog(this IEndpointRouteBuilder app){
   var group=app.MapGroup("/api/admin/exercise-catalog").RequireAuthorization(p=>p.RequireRole("Owner"));
   group.MapGet("",async(ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
-   return Results.Ok(await db.ExerciseCatalogItems.AsNoTracking().Where(x=>x.GymId==gym).OrderBy(x=>x.Category).ThenBy(x=>x.Name).Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes}).ToListAsync());
+   return Results.Ok(await db.ExerciseCatalogItems.AsNoTracking().Where(x=>x.GymId==gym).OrderBy(x=>x.Category).ThenBy(x=>x.Name).Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes,x.ImageUrl}).ToListAsync());
   });
   app.MapGet("/api/member/exercise-catalog",async(ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gymId)||!Guid.TryParse(principal.FindFirst("member_id")?.Value,out var memberId))return Results.Unauthorized();
    if(!await db.Members.AnyAsync(m=>m.Id==memberId&&m.GymId==gymId))return Results.Unauthorized();
    return Results.Ok(await db.ExerciseCatalogItems.AsNoTracking().Where(x=>x.GymId==gymId)
     .OrderBy(x=>x.Category).ThenBy(x=>x.Name)
-    .Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes}).ToListAsync());
+    .Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes,x.ImageUrl}).ToListAsync());
   }).RequireAuthorization(p=>p.RequireRole("Member"));
+  group.MapPut("/{id:guid}/image",async(Guid id,CatalogImageInput input,ClaimsPrincipal principal,GymDbContext db)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
+   var image=input.ImageUrl?.Trim();
+   if(image is {Length:>160000} || (image is {Length:>0} && !(Uri.TryCreate(image,UriKind.Absolute,out var uri) && uri.Scheme=="https") && !System.Text.RegularExpressions.Regex.IsMatch(image,@"^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$")))
+    return Results.BadRequest(new{message="Usá una URL HTTPS o una imagen JPG, PNG o WebP de hasta 120 KB."});
+   var item=await db.ExerciseCatalogItems.SingleOrDefaultAsync(x=>x.Id==id&&x.GymId==gym);
+   if(item is null)return Results.NotFound();
+   item.ImageUrl=string.IsNullOrWhiteSpace(image)?null:image;
+   await db.SaveChangesAsync();
+   return Results.Ok(new{item.Id,item.ImageUrl});
+  });
   group.MapPost("/import",async(CatalogImport input,ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
    if(input.Exercises is null||input.Exercises.Count is <1 or >500)return Results.BadRequest(new{message="El catálogo debe contener entre 1 y 500 ejercicios."});
