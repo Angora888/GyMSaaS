@@ -71,6 +71,18 @@ public static class MemberWorkoutEndpoints {
    if(session is null){session=new MemberWorkoutSession{GymId=gym,MemberId=member,ProgramId=programId,DayId=dayId};db.MemberWorkoutSessions.Add(session);await db.SaveChangesAsync();}
    return Results.Ok(new{session.Id,session.DayId,session.StartedAt,completed=JsonSerializer.Deserialize<List<string>>(session.CompletedJson),weights=JsonSerializer.Deserialize<Dictionary<string,decimal>>(session.WeightsJson)});
   });
+  group.MapDelete("/sessions/{sessionId:guid}",async(Guid sessionId,ClaimsPrincipal user,GymDbContext db)=>{
+   if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
+   var session=await db.MemberWorkoutSessions.SingleOrDefaultAsync(x=>x.Id==sessionId&&x.GymId==gym&&x.MemberId==member);
+   if(session is null)return Results.NotFound();
+   if(session.FinishedAt!=null)return Results.Conflict(new{message="No se puede descartar un entrenamiento finalizado."});
+   var completed=JsonSerializer.Deserialize<List<string>>(session.CompletedJson)??[];
+   var weights=JsonSerializer.Deserialize<Dictionary<string,decimal>>(session.WeightsJson)??[];
+   if(completed.Count>0||weights.Count>0)return Results.Conflict(new{message="Esta sesión ya registra progreso y no se puede descartar."});
+   db.MemberWorkoutSessions.Remove(session);
+   await db.SaveChangesAsync();
+   return Results.NoContent();
+  });
   group.MapPut("/sessions/{sessionId:guid}/progress",async(Guid sessionId,WorkoutProgressInput input,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
    var session=await db.MemberWorkoutSessions.SingleOrDefaultAsync(x=>x.Id==sessionId&&x.GymId==gym&&x.MemberId==member);
