@@ -385,3 +385,12 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .workoutExercisePlaceholder{display:grid;place-items:center;max-width:340px;height:80px;border:1px dashed #554047;background:#15151b;border-radius:12px;margin:12px auto;font-size:34px}
 .coachExerciseImage{display:block;width:130px;height:95px;object-fit:contain;border-radius:9px;margin:10px 0}
 @media(max-width:450px){.catalogImagePreview{width:64px;height:64px;flex-basis:64px}.catalogImageActions{flex-direction:column;align-items:stretch}.catalogImageActions label:has(input[type=url]){min-width:0}}
+
+/* GyMSaaS original instructional movement diagrams */
+.exerciseSchematic{width:min(100%,340px);margin:12px auto;overflow:hidden}
+.exerciseSchematic svg{display:block;width:100%;height:auto;border-radius:13px}
+.exerciseSchematic small{display:block;text-align:center;color:#abb9c8;font-size:11px;margin-top:4px}
+.catalogImagePreview .exerciseSchematic{width:100%;margin:0}
+.catalogImagePreview .exerciseSchematic small{display:none}
+.catalogImagePreview .exerciseSchematic svg{width:100%;height:100%}
+.coachExercise .exerciseSchematic{max-width:220px;margin:10px 0}
