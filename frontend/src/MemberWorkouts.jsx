@@ -100,7 +100,7 @@ export default function MemberWorkouts({token}){
  const maxWeight=Math.max(1,...strengthPoints.map(x=>x.weight));
  const bestWeight=Math.max(0,...strengthHistory.map(x=>x.weight));
  const firstWeight=strengthHistory[0]?.weight||0;
- const normalizeExerciseName=value=>String(value||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+ const normalizeExerciseName=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
  const exerciseAliases={
   'press con maquina plano o inclinado':'press en maquina',
   'jalon con polea agarre abierto':'jalon al pecho agarre abierto',
