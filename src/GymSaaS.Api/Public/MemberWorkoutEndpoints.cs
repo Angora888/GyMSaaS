@@ -34,8 +34,22 @@ public static class MemberWorkoutEndpoints {
    if(!Valid(input))return Results.BadRequest(new{message="Revisá los días, ejercicios, series, repeticiones y descansos."});
    var entity=await db.MemberWorkoutPrograms.SingleOrDefaultAsync(p=>p.Id==programId&&p.GymId==gym&&p.MemberId==member);
    if(entity is null)return Results.NotFound();
-   if(await db.MemberWorkoutSessions.AnyAsync(s=>s.ProgramId==programId&&s.GymId==gym&&s.MemberId==member&&s.FinishedAt==null))
-    return Results.Conflict(new{message="Terminá el entrenamiento que está en curso antes de editar esta rutina."});
+   // An unfinished workout must not block routine edits. Keep its day and
+   // completed exercise identifiers valid so recorded weights/sets remain usable.
+   var openSessions=await db.MemberWorkoutSessions.AsNoTracking()
+    .Where(s=>s.ProgramId==programId&&s.GymId==gym&&s.MemberId==member&&s.FinishedAt==null).ToListAsync();
+   foreach(var current in openSessions){
+    var activeDay=input.Days.FirstOrDefault(d=>d.Id==current.DayId);
+    if(activeDay is null)return Results.Conflict(new{message="La rutina tiene un entrenamiento activo. Conservá el día en curso para no perder el progreso."});
+    var completed=JsonSerializer.Deserialize<List<string>>(current.CompletedJson)??[];
+    foreach(var key in completed){
+     var separator=key.LastIndexOf(':');
+     if(separator<1||!int.TryParse(key[(separator+1)..],out var setNumber))continue;
+     var exercise=activeDay.Exercises.FirstOrDefault(e=>e.Id==key[..separator]);
+     if(exercise is null||exercise.Sets<setNumber)
+      return Results.Conflict(new{message="Hay series completadas en un entrenamiento activo. Conservá esos ejercicios y sus series hasta finalizarlo."});
+    }
+   }
    if(input.IsActive){
     var old=await db.MemberWorkoutPrograms.Where(p=>p.GymId==gym&&p.MemberId==member&&p.Id!=programId&&p.IsActive).ToListAsync();
     foreach(var p in old)p.IsActive=false;
