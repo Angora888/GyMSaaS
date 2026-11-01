@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Official exercise illustration inventory; matching names and paths from existing GymSaaS catalog. Files are added separately after quality review.",
+  "description": "Official exercise illustration inventory, matching 55 exercises currently found in GymSaaS Neon. Image files will be added separately after illustration review.",
   "count": 55,
   "exercises": [
     {
