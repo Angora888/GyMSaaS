@@ -370,3 +370,18 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
  .workoutRestDock .secondary{font-size:12px;padding:8px}
 }
 @media(max-width:365px){.workoutRest.workoutRestDock{flex-wrap:wrap;justify-content:center}}
+
+/* Illustrated exercise catalog and workouts */
+.catalogImageItem{display:flex;justify-content:flex-start;align-items:flex-start;gap:12px}
+.catalogImagePreview{width:82px;height:82px;flex:0 0 82px;border-radius:12px;background:#25232a;display:grid;place-items:center;overflow:hidden;font-size:30px}
+.catalogImagePreview img{width:100%;height:100%;object-fit:contain}
+.catalogImageInfo{display:grid;gap:6px;flex:1;min-width:0}
+.catalogImageActions{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin-top:4px}
+.catalogImageActions .secondary{padding:8px 12px;cursor:pointer;border-radius:8px;font-size:12px}
+.catalogImageActions input[type=file]{display:none}
+.catalogImageActions label:has(input[type=url]){flex:1;min-width:145px;font-size:12px}
+.catalogImageActions input[type=url]{display:block;width:100%;margin-top:4px;padding:8px;min-width:0;background:#111116;color:white;border:1px solid #554047;border-radius:8px}
+.workoutExerciseImage{display:block;max-width:340px;width:100%;height:190px;object-fit:contain;margin:12px auto;border-radius:12px;background:#15151b}
+.workoutExercisePlaceholder{display:grid;place-items:center;max-width:340px;height:80px;border:1px dashed #554047;background:#15151b;border-radius:12px;margin:12px auto;font-size:34px}
+.coachExerciseImage{display:block;width:130px;height:95px;object-fit:contain;border-radius:9px;margin:10px 0}
+@media(max-width:450px){.catalogImagePreview{width:64px;height:64px;flex-basis:64px}.catalogImageActions{flex-direction:column;align-items:stretch}.catalogImageActions label:has(input[type=url]){min-width:0}}
