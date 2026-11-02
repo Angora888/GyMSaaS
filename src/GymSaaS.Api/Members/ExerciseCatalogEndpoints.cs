@@ -1,3 +1,7 @@
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Security.Claims;
 using GymSaaS.Api.Data;
 using GymSaaS.Api.Models;
@@ -31,6 +35,62 @@ public static class ExerciseCatalogEndpoints {
    item.ImageUrl=string.IsNullOrWhiteSpace(image)?null:image;
    await db.SaveChangesAsync();
    return Results.Ok(new{item.Id,item.ImageUrl});
+  });
+  // Owner-only, optional GitHub-backed static asset upload. No image bytes are stored in Neon.
+  group.MapPost("/{id:guid}/image-file",async(Guid id,CatalogImageInput input,ClaimsPrincipal principal,GymDbContext db,IHttpClientFactory clients,IConfiguration config)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
+   var item=await db.ExerciseCatalogItems.SingleOrDefaultAsync(x=>x.Id==id&&x.GymId==gym);
+   if(item is null)return Results.NotFound();
+   var token=config["ExerciseImages:GitHubToken"];
+   if(string.IsNullOrWhiteSpace(token))return Results.Problem("La carga al repositorio no está configurada. Configurá ExerciseImages__GitHubToken en el backend.",statusCode:503);
+   var data=input.ImageUrl??"";
+   const string prefix="data:image/webp;base64,";
+   if(!data.StartsWith(prefix,StringComparison.Ordinal)||data.Length>300000)
+    return Results.BadRequest(new{message="Solo se permiten imágenes WebP optimizadas de hasta 220 KB."});
+   byte[] bytes;
+   try {bytes=Convert.FromBase64String(data[prefix.Length..]);}
+   catch(FormatException){return Results.BadRequest(new{message="Imagen Base64 no válida."});}
+   if(bytes.Length<16||bytes.Length>220000||Encoding.ASCII.GetString(bytes,0,4)!="RIFF"||Encoding.ASCII.GetString(bytes,8,4)!="WEBP")
+    return Results.BadRequest(new{message="El archivo no es una imagen WebP válida o supera 220 KB."});
+   static string Slug(string value){
+    var normalized=value.Normalize(NormalizationForm.FormD);
+    var clean=new string(normalized.Where(c=>System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)!=System.Globalization.UnicodeCategory.NonSpacingMark).ToArray()).ToLowerInvariant();
+    return Regex.Replace(Regex.Replace(clean,@"[^a-z0-9]+","-"),@"^-|-$","");
+   }
+   var category=Slug(item.Category);var name=Slug(item.Name);
+   if(category.Length==0||name.Length==0)return Results.BadRequest(new{message="Nombre de ejercicio o categoría inválido."});
+   var repo=config["ExerciseImages:GitHubRepository"]??"Angora888/GyMSaaS";
+   if(!Regex.IsMatch(repo,@"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"))return Results.Problem("Repositorio de imágenes mal configurado.",statusCode:503);
+   var branch=config["ExerciseImages:GitHubBranch"]??"main";
+   var path=$"frontend/public/ejercicios/{category}/{name}.webp";
+   var url=$"https://api.github.com/repos/{repo}/contents/{path}";
+   using var client=clients.CreateClient();
+   client.DefaultRequestHeaders.UserAgent.ParseAdd("GymSaaS-ExerciseImages/1.0");
+   client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+   client.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",token);
+   client.Timeout=TimeSpan.FromSeconds(25);
+   try {
+    string? sha=null;
+    using(var existing=await client.GetAsync(url+"?ref="+Uri.EscapeDataString(branch))){
+     if(existing.IsSuccessStatusCode){
+      using var doc=JsonDocument.Parse(await existing.Content.ReadAsStringAsync());
+      sha=doc.RootElement.GetProperty("sha").GetString();
+     }else if(existing.StatusCode!=System.Net.HttpStatusCode.NotFound)
+      return Results.Problem("No se pudo consultar la imagen en GitHub.",statusCode:502);
+    }
+    var payload=new Dictionary<string,object?>{
+     ["message"]=$"Update exercise image: {item.Category}/{item.Name}",
+     ["content"]=Convert.ToBase64String(bytes),["branch"]=branch
+    };
+    if(sha is not null)payload["sha"]=sha;
+    using var response=await client.PutAsync(url,new StringContent(JsonSerializer.Serialize(payload),Encoding.UTF8,"application/json"));
+    if(!response.IsSuccessStatusCode)return Results.Problem("GitHub rechazó la subida de la imagen. Verificá los permisos del token y la rama.",statusCode:502);
+    // Clear former inline image only after GitHub confirms the new file was committed.
+    item.ImageUrl=null;
+    await db.SaveChangesAsync();
+    return Results.Ok(new{path="/ejercicios/"+category+"/"+name+".webp",published=false,message="Imagen enviada a GitHub. Vercel debe completar el despliegue."});
+   }catch(HttpRequestException){return Results.Problem("No se pudo conectar a GitHub.",statusCode:502);}
+    catch(TaskCanceledException){return Results.Problem("La subida a GitHub agotó el tiempo de espera.",statusCode:504);}
   });
   group.MapPost("/import",async(CatalogImport input,ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
