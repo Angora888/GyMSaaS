@@ -107,6 +107,20 @@ export default function MemberWorkouts({token}){
   'jalon con polea agarre cerrado':'jalon al pecho agarre cerrado',
   'remo con polea sentado':'remo sentado en polea',
   'aperturas en crossover':'aperturas en cross over',
+  'curl de biceps martillo':'curl martillo',
+  'curl de biceps agarre invertido':'curl invertido',
+  'extension de codo en polea':'extension de triceps en polea',
+  'flexion de muneca con barra o mancuernas':'flexion de muneca con barra',
+  'extension de muneca con barra o mancuernas':'extension de muneca con barra',
+  'press plano con barra o mancuernas':'press plano con barra',
+  'flexion de piernas acostado':'curl femoral acostado',
+  'flexion de piernas sentado':'curl femoral sentado',
+  'flexion plantar sentado':'elevacion de talones sentado',
+  'flexion plantar en smith':'elevacion de talones en smith',
+  'flexion plantar en prensa':'pantorrillas en prensa',
+  'elevacion frontal con disco o mancuernas':'elevacion frontal con disco',
+  'deltoides posterior en polea':'deltoide posterior en polea',
+  'encogimientos de trapecio con mancuernas':'encogimiento con mancuernas',
  };
  const catalogExercise=ex=>{
   const original=normalizeExerciseName(ex.name);
