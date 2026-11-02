@@ -396,3 +396,7 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .coachExercise .exerciseSchematic{max-width:220px;margin:10px 0}
 
 .routineDefaults{padding:16px;border:1px solid #805061;border-radius:14px;background:#231c27;margin:14px 0}.routineDefaults>strong{display:block;color:#ff9aad;margin-bottom:12px}.routineDefaults small{display:block;color:#c1b6c0;margin-top:10px}.routineDefaults .workoutFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.routineDefaults input{width:100%;min-width:0}@media(max-width:420px){.routineDefaults .workoutFields{gap:6px}.routineDefaults label{font-size:12px}}
+
+/* Live exercise count shown beside each day during workout editing. */
+.workoutDayExerciseCount{flex:0 0 auto;white-space:nowrap;border:1px solid #b93d55;border-radius:999px;padding:7px 10px;color:#ff8395;background:rgba(232,42,76,.09);font-size:.8rem;font-weight:700}
+@media(max-width:540px){.workoutDayEditor>.workoutRow{flex-wrap:wrap}.workoutDayEditor>.workoutRow>input{flex:1 1 65%;min-width:0}.workoutDayExerciseCount{order:3;margin-right:auto}}
