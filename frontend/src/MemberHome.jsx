@@ -3,7 +3,7 @@ import MeasurementHistory from './MeasurementHistory.jsx';
 import React,{useEffect,useState} from 'react';
 const API=(import.meta.env.VITE_API_URL||'').replace(/\/$/,'');
 export default function MemberHome({token,onLogout}){
- const [checkingOut,setCheckingOut]=useState(false),[data,setData]=useState(null),[error,setError]=useState(''),[tab,setTab]=useState('inicio'),[checkinStatus,setCheckinStatus]=useState(''),[editingProfile,setEditingProfile]=useState(false),[profileForm,setProfileForm]=useState({phone:'',emergencyPhone:'',weightKg:'',heightCm:''}),[profileNotice,setProfileNotice]=useState(''),[savingProfile,setSavingProfile]=useState(false),[measurementRevision,setMeasurementRevision]=useState(0);
+ const [checkingIn,setCheckingIn]=useState(false),[checkingOut,setCheckingOut]=useState(false),[data,setData]=useState(null),[error,setError]=useState(''),[tab,setTab]=useState('inicio'),[checkinStatus,setCheckinStatus]=useState(''),[editingProfile,setEditingProfile]=useState(false),[profileForm,setProfileForm]=useState({phone:'',emergencyPhone:'',weightKg:'',heightCm:''}),[profileNotice,setProfileNotice]=useState(''),[savingProfile,setSavingProfile]=useState(false),[measurementRevision,setMeasurementRevision]=useState(0);
  useEffect(()=>{let active=true;fetch(API+'/api/member/dashboard',{headers:{Authorization:'Bearer '+token}})
   .then(async r=>{if(!r.ok)throw Error(r.status===401?'Tu sesión venció. Ingresá de nuevo.':'No se pudo cargar tu información.');return r.json()})
   .then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[token]);
@@ -33,6 +33,17 @@ export default function MemberHome({token,onLogout}){
   }
   checkin();return()=>{cancelled=true};
  },[token]);
+ async function manualCheckin(){
+  if(checkingIn)return;setCheckingIn(true);setCheckinStatus('');
+  try{
+   const response=await fetch(API+'/api/member/checkin-manual',{method:'POST',headers:{Authorization:'Bearer '+token}});
+   const result=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error(result.message||result.detail||'No se pudo registrar tu llegada.');
+   setCheckinStatus(result.message||'¡Llegada registrada!');
+   const dashboard=await fetch(API+'/api/member/dashboard',{headers:{Authorization:'Bearer '+token}});
+   if(dashboard.ok)setData(await dashboard.json());
+  }catch(e){setCheckinStatus(e.message||'No se pudo registrar tu llegada.')}finally{setCheckingIn(false)}
+ }
  async function checkout(){setCheckingOut(true);setCheckinStatus('');try{
  const r=await fetch(API+'/api/member/checkout',{method:'POST',headers:{Authorization:'Bearer '+token}});
  const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||'No se pudo registrar la salida.');
@@ -55,7 +66,7 @@ export default function MemberHome({token,onLogout}){
  return <div className="memberHome"><div className="mhLayout">
   <div className="mhTop"><div>{data.gym.brandLogoUrl&&<img className="mhGymLogo" src={data.gym.brandLogoUrl} alt={"Logo de "+data.gym.name}/>}<small>{data.gym.name}</small><h1>¡Hola, <span>{data.member.fullName.split(' ')[0]}</span>!</h1><p>{data.gym.brandTagline||"¡Seguí entrenando con fuerza!"}</p></div><button className="mhLogout" onClick={onLogout}>Salir ↗</button></div>
   {checkinStatus&&<div className="mhCard" role="status"><strong>{checkinStatus}</strong></div>}
-  {tab==='inicio'?<><div className="mhHero"><span className="mhHeroIcon">▦</span><div><strong>Tu asistencia</strong><p>Para registrar tu entrada, escaneá el QR temporal de recepción con la cámara de tu celular.</p></div></div>
+  {tab==='inicio'?<><div className="mhHero"><span className="mhHeroIcon">▦</span><div><strong>Tu asistencia</strong><p>Escaneá el QR de recepción o, durante las pruebas, registrá tu llegada con el botón.</p>{!data.insideNow&&<button type="button" className="primary" disabled={checkingIn||attended.has(new Date().toLocaleDateString("en-CA"))} onClick={manualCheckin}>{checkingIn?"Registrando…":attended.has(new Date().toLocaleDateString("en-CA"))?"✓ Ya registraste tu llegada hoy":"✓ Llegué al gym (pruebas)"}</button>}</div></div>
    <div className="mhCard"><h2>✓ Asistencia semanal</h2><div className="mhDays">{days.map((d,i)=>{const key=d.toLocaleDateString('en-CA');return <div key={i}><small>{['D','L','M','M','J','V','S'][i]}</small><span className={attended.has(key)?'mhAttended':''}>{attended.has(key)?'✓':d.getDate()}</span></div>})}</div><p className="mhHint">Asistencias registradas en el sistema durante los últimos 14 días.</p></div>
    <div className="mhCard mhTrainingNow"><div className="mhTrainingNowRow"><h2>♟ Entrenando ahora</h2><strong>{data.trainingNow??0}</strong></div><p>Miembros con entrada por QR en las últimas dos horas y sin salida registrada.</p>{data.insideNow&&<button type="button" className="secondary" disabled={checkingOut} onClick={checkout}>{checkingOut?"Registrando salida…":"Salir del gimnasio"}</button>}</div>
    <div className="mhCard"><h2>▤ Membresía</h2>{current?<><strong className="mhBig">{current.plan}</strong><p>{current.status==='active'?'Activa':current.status==='expired'?'Vencida':'Próxima'} · Hasta {current.endDate}</p></>:<><strong className="mhStatus">Sin plan</strong><p>Tu gimnasio todavía no te ha asignado una membresía.</p></>}</div>
