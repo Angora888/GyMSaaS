@@ -105,6 +105,23 @@ app.MapGoogleOwner();
 app.MapMemberDashboard();
 app.MapMemberProfile();
 app.MapMemberWorkouts();
+// Temporary QA check-in: same attendance table as QR, without requiring a second device.
+// Restricted to authenticated gym members and idempotent for each Costa Rica calendar day.
+app.MapPost("/api/member/checkin-manual",async(ClaimsPrincipal principal,GymDbContext db)=>{
+ if(!Guid.TryParse(principal.FindFirstValue("gym_id"),out var gymId)||!Guid.TryParse(principal.FindFirstValue("member_id"),out var memberId))return Results.Unauthorized();
+ if(!await db.Members.AnyAsync(m=>m.Id==memberId&&m.GymId==gymId))return Results.Unauthorized();
+ var now=DateTimeOffset.UtcNow;
+ var local=TimeZoneInfo.ConvertTimeBySystemTimeZoneId(now,"America/Costa_Rica");
+ var start=new DateTimeOffset(local.Year,local.Month,local.Day,0,0,0,TimeSpan.FromHours(-6)).ToUniversalTime();
+ var end=start.AddDays(1);
+ var existing=await db.Attendances.AsNoTracking().FirstOrDefaultAsync(a=>a.GymId==gymId&&a.MemberId==memberId&&a.CheckedInAt>=start&&a.CheckedInAt<end);
+ if(existing is not null)return Results.Ok(new{alreadyRegistered=true,message="Tu asistencia de hoy ya está registrada."});
+ // Reuse the existing attendance entity so the dashboard and Entrenando ahora update as with QR.
+ db.Attendances.Add(new Attendance{GymId=gymId,MemberId=memberId,CheckedInAt=now});
+ await db.SaveChangesAsync();
+ return Results.Ok(new{alreadyRegistered=false,message="¡Llegaste al gym! Asistencia registrada correctamente."});
+}).RequireAuthorization(p=>p.RequireRole("Member"));
+
 app.Run();
 
 public sealed class ValidationFilter<T>:IEndpointFilter {
