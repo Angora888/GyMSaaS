@@ -7,6 +7,9 @@ public sealed class ExerciseCatalogItem {
  public int DefaultSets {get;set;}=4;
  public int DefaultReps {get;set;}=10;
  public int DefaultRestSeconds {get;set;}=120;
+ public string ExerciseType {get;set;}="reps";
+ public int DurationSeconds {get;set;}=0;
+ public string? Instructions {get;set;}
  public string? Notes {get;set;}
  public string? ImageUrl {get;set;}
 }
