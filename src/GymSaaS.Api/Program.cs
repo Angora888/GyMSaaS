@@ -96,6 +96,7 @@ app.MapTrainerPortal();
 app.MapOwnerDashboard();
 app.MapGymBranding();
 app.MapExerciseCatalog();
+app.MapWorkoutTemplates();
 app.MapMembershipEndpoints();
 app.MapPayments();
 app.MapAttendanceEndpoints();
