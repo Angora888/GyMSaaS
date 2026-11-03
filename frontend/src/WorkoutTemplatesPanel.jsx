@@ -1,3 +1,4 @@
+import CatalogExerciseImage from './CatalogExerciseImage.jsx';
 import React,{useEffect,useState} from 'react';
 const API=(import.meta.env.VITE_API_URL||'').replace(/\/$/,'');
 const uid=()=>crypto.randomUUID();
@@ -54,7 +55,7 @@ export default function WorkoutTemplatesPanel({token,members}){
   <div className="templateGrid">{templates.map(t=><button key={t.id} type="button" className={'templateCard '+(selected===t.id?'selected':'')} onClick={()=>setSelected(t.id)}><strong>{t.name}</strong><small>{t.days?.length||0} días · {(t.days||[]).reduce((n,d)=>n+(d.exercises?.length||0),0)} ejercicios</small></button>)}</div>
   {chosen&&<section className="templateDetails"><div className="memberhead"><h3>{chosen.name}</h3><button type="button" className="secondary" onClick={()=>setEditing({id:chosen.id,name:chosen.name,description:chosen.description||'',isActive:true,days:structuredClone(chosen.days||[])})}>Editar plantilla</button></div>
    {chosen.description&&<p>{chosen.description}</p>}
-   {chosen.days?.map(d=><details key={d.id} className="catalogGroup"><summary>{d.name} · {d.exercises?.length||0} ejercicios</summary>{d.exercises?.map(e=><p key={e.id}>{e.name} — {e.sets} × {e.reps} · {e.restSeconds} s descanso</p>)}</details>)}
+   {chosen.days?.map(d=><details key={d.id} className="catalogGroup"><summary>{d.name} · {d.exercises?.length||0} ejercicios</summary>{d.exercises?.map(e=>{const item=catalog.find(x=>x.category===e.category&&x.name===e.name);return <div key={e.id} className="templateExercisePreview"><CatalogExerciseImage name={e.name} category={e.category} imageUrl={item?.imageUrl} className="templateExerciseImage"/><div><strong>{e.name}</strong><small>{e.sets} × {e.reps} · {e.restSeconds} s descanso</small></div></div>})}</details>)}
    <div className="templateAssign"><label>Asignar a miembro<select value={member} onChange={e=>setMember(e.target.value)}><option value="">Seleccioná un miembro</option>{members.map(m=><option key={m.id} value={m.id}>{m.fullName}</option>)}</select></label><button className="primary" disabled={busy||!member} type="button" onClick={assign}>Asignar copia de plantilla</button></div>
    <small>La asignación no modifica las rutinas que ya tiene el miembro. La copia se guarda inicialmente como inactiva.</small>
   </section>}
