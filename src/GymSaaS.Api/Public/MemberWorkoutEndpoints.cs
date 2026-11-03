@@ -20,7 +20,7 @@ public static class MemberWorkoutEndpoints {
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
    var programs=await db.MemberWorkoutPrograms.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==member).OrderByDescending(x=>x.CreatedAt).ToListAsync();
    var sessions=await db.MemberWorkoutSessions.AsNoTracking().Where(x=>x.GymId==gym&&x.MemberId==member).OrderByDescending(x=>x.StartedAt).Take(40).ToListAsync();
-   return Results.Ok(new{programs=programs.Select(p=>new{p.Id,p.Name,p.Description,p.IsActive,p.CreatedAt,days=JsonSerializer.Deserialize<List<WorkoutDay>>(p.DaysJson)}),sessions=sessions.Select(s=>new{s.Id,s.ProgramId,s.DayId,s.StartedAt,s.FinishedAt,completed=JsonSerializer.Deserialize<List<string>>(s.CompletedJson),weights=JsonSerializer.Deserialize<Dictionary<string,decimal>>(s.WeightsJson)})});
+   return Results.Ok(new{programs=programs.Select(p=>new{p.Id,p.Name,p.Description,p.IsActive,p.CreatedAt,days=JsonSerializer.Deserialize<List<WorkoutDay>>(p.DaysJson,new JsonSerializerOptions(JsonSerializerDefaults.Web))}),sessions=sessions.Select(s=>new{s.Id,s.ProgramId,s.DayId,s.StartedAt,s.FinishedAt,completed=JsonSerializer.Deserialize<List<string>>(s.CompletedJson),weights=JsonSerializer.Deserialize<Dictionary<string,decimal>>(s.WeightsJson)})});
   });
   group.MapPost("",async(WorkoutProgramInput input,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
@@ -65,7 +65,7 @@ public static class MemberWorkoutEndpoints {
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
    var program=await db.MemberWorkoutPrograms.AsNoTracking().FirstOrDefaultAsync(p=>p.Id==programId&&p.GymId==gym&&p.MemberId==member);
    if(program is null)return Results.NotFound();
-   var days=JsonSerializer.Deserialize<List<WorkoutDay>>(program.DaysJson)??[];
+   var days=JsonSerializer.Deserialize<List<WorkoutDay>>(program.DaysJson,new JsonSerializerOptions(JsonSerializerDefaults.Web))??[];
    if(!days.Any(d=>d.Id==dayId))return Results.NotFound();
    var session=await db.MemberWorkoutSessions.Where(s=>s.GymId==gym&&s.MemberId==member&&s.ProgramId==programId&&s.DayId==dayId&&s.FinishedAt==null).OrderByDescending(s=>s.StartedAt).FirstOrDefaultAsync();
    if(session is null){session=new MemberWorkoutSession{GymId=gym,MemberId=member,ProgramId=programId,DayId=dayId};db.MemberWorkoutSessions.Add(session);await db.SaveChangesAsync();}
