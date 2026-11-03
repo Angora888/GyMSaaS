@@ -4,7 +4,7 @@ using GymSaaS.Api.Data;
 using GymSaaS.Api.Models;
 using Microsoft.EntityFrameworkCore;
 namespace GymSaaS.Api.Public;
-public sealed record WorkoutExercise(string Id,string Name,int Sets,int Reps,int RestSeconds,string? Category=null);
+public sealed record WorkoutExercise(string Id,string Name,int Sets,int Reps,int RestSeconds,string? Category=null,string ExerciseType="reps",int DurationSeconds=0,string? Instructions=null);
 public sealed record WorkoutDay(string Id,string Name,int[] Weekdays,List<WorkoutExercise> Exercises);
 public sealed record WorkoutProgramInput(string Name,string? Description,bool IsActive,List<WorkoutDay> Days);
 public sealed record WorkoutProgressInput(string ExerciseId,int SetNumber,bool Completed,decimal? WeightKg);
@@ -12,7 +12,7 @@ public static class MemberWorkoutEndpoints {
  static bool Tenant(ClaimsPrincipal p,out Guid gym,out Guid member)=>Guid.TryParse(p.FindFirst("gym_id")?.Value,out gym)&Guid.TryParse(p.FindFirst("member_id")?.Value,out member);
  public static bool Valid(WorkoutProgramInput input)=>!string.IsNullOrWhiteSpace(input.Name)&&input.Name.Trim().Length<=120&&input.Description?.Length<=1000&&input.Days is {Count:>0 and <=14}&&
  input.Days.All(d=>!string.IsNullOrWhiteSpace(d.Id)&&d.Id.Length<=80&&!string.IsNullOrWhiteSpace(d.Name)&&d.Name.Length<=80&&d.Weekdays is not null&&d.Weekdays.All(w=>w>=0&&w<=6)&&d.Exercises is {Count:>0 and <=30}&&
- d.Exercises.All(e=>!string.IsNullOrWhiteSpace(e.Id)&&e.Id.Length<=80&&!string.IsNullOrWhiteSpace(e.Name)&&e.Name.Length<=120&&e.Sets is >=1 and <=20&&e.Reps is >=1 and <=1000&&e.RestSeconds is >=0 and <=3600))&&
+ d.Exercises.All(e=>!string.IsNullOrWhiteSpace(e.Id)&&e.Id.Length<=80&&!string.IsNullOrWhiteSpace(e.Name)&&e.Name.Length<=120&&e.Sets is >=1 and <=20&&e.Reps is >=1 and <=1000&&e.RestSeconds is >=0 and <=3600&&e.ExerciseType is ("reps" or "timed" or "isometric")&&e.DurationSeconds is >=0 and <=3600&&(e.ExerciseType=="reps"||e.DurationSeconds>=1)&&e.Instructions?.Length<=2000))&&
  input.Days.Select(d=>d.Id).Distinct().Count()==input.Days.Count&&input.Days.SelectMany(d=>d.Exercises.Select(e=>e.Id)).Distinct().Count()==input.Days.Sum(d=>d.Exercises.Count);
  public static IEndpointRouteBuilder MapMemberWorkouts(this IEndpointRouteBuilder app){
   var group=app.MapGroup("/api/member/workouts").RequireAuthorization(p=>p.RequireRole("Member"));
@@ -89,7 +89,7 @@ public static class MemberWorkoutEndpoints {
    if(session is null)return Results.NotFound();
    if(session.FinishedAt!=null)return Results.Conflict(new{message="Este entrenamiento ya terminó."});
    var program=await db.MemberWorkoutPrograms.AsNoTracking().SingleAsync(p=>p.Id==session.ProgramId&&p.GymId==gym&&p.MemberId==member);
-   var day=(JsonSerializer.Deserialize<List<WorkoutDay>>(program.DaysJson)??[]).FirstOrDefault(d=>d.Id==session.DayId);
+   var day=(JsonSerializer.Deserialize<List<WorkoutDay>>(program.DaysJson,new JsonSerializerOptions(JsonSerializerDefaults.Web))??[]).FirstOrDefault(d=>d.Id==session.DayId);
    var exercise=day?.Exercises.FirstOrDefault(e=>e.Id==input.ExerciseId);
    if(exercise is null||input.SetNumber<1||input.SetNumber>exercise.Sets||input.WeightKg is < 0 or > 2000)return Results.BadRequest(new{message="Serie inválida."});
    var list=(JsonSerializer.Deserialize<List<string>>(session.CompletedJson)??[]).ToHashSet();
