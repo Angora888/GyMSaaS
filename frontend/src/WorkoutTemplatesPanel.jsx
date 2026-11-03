@@ -12,10 +12,10 @@ const normalize=(source)=>{
     reps:Number(ex.reps||source.default_reps||(ex.duration_seconds?1:12)),restSeconds:Number(ex.restSeconds??ex.rest_seconds??120)}))}))};
 };
 export default function WorkoutTemplatesPanel({token,members}){
- const [templates,setTemplates]=useState([]),[selected,setSelected]=useState(''),[member,setMember]=useState(''),[editing,setEditing]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ const [catalog,setCatalog]=useState([]),[templates,setTemplates]=useState([]),[selected,setSelected]=useState(''),[member,setMember]=useState(''),[editing,setEditing]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  async function api(path,method='GET',body){const r=await fetch(API+'/api/admin/workout-templates'+path,{method,headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.message||'No se pudo completar la operación');return data}
  async function load(){const result=await api('');setTemplates(result);return result}
- useEffect(()=>{let alive=true;api('').then(x=>{if(alive)setTemplates(x)}).catch(e=>{if(alive)setError(e.message)});return()=>{alive=false}},[token]);
+ useEffect(()=>{let alive=true;api('').then(x=>{if(alive)setTemplates(x)}).catch(e=>{if(alive)setError(e.message)});fetch(API+'/api/admin/exercise-catalog',{headers:{Authorization:'Bearer '+token}}).then(r=>r.ok?r.json():[]).then(x=>{if(alive)setCatalog(x)}).catch(()=>{});return()=>{alive=false}},[token]);
  async function importFile(event){const file=event.target.files?.[0];event.target.value='';if(!file)return;setError('');setNotice('');
   try{if(file.size>300000)throw Error('Máximo 300 KB');const data=normalize(JSON.parse(await file.text()));setEditing({id:null,...data});setNotice('Revisá la plantilla y guardala para poder asignarla.')}catch(e){setError(e.message)}
  }
@@ -40,6 +40,7 @@ export default function WorkoutTemplatesPanel({token,members}){
    <label>Descripción<textarea rows={2} maxLength={1000} value={editing.description||''} onChange={e=>setEditing(x=>({...x,description:e.target.value}))}/></label>
    {editing.days.map((d,i)=><div className="mhCard templateDay" key={d.id}>
     <div className="workoutRow"><input aria-label="Nombre del día" value={d.name} required onChange={e=>setDay(i,{name:e.target.value})}/><button type="button" className="secondary" disabled={editing.days.length===1} onClick={()=>setEditing(x=>({...x,days:x.days.filter((_,j)=>j!==i)}))}>Quitar día</button></div>
+    <label>Agregar ejercicio desde el catálogo<select value="" onChange={e=>{const item=catalog.find(x=>x.id===e.target.value);if(item)setDay(i,{exercises:[...d.exercises.filter(ex=>ex.name.trim()),{id:uid(),name:item.name,category:item.category,sets:item.defaultSets,reps:item.defaultReps,restSeconds:item.defaultRestSeconds}]})}}><option value="">Elegí un ejercicio del catálogo…</option>{catalog.map(item=><option key={item.id} value={item.id}>{item.category} · {item.name}</option>)}</select></label>
     <label>Días de la semana (0=domingo, 1=lunes, ...)<input value={(d.weekdays||[]).join(',')} onChange={e=>setDay(i,{weekdays:e.target.value.split(',').map(Number).filter(x=>Number.isInteger(x)&&x>=0&&x<=6)})}/></label>
     {d.exercises.map((ex,j)=><div key={ex.id} className="templateExercise">
      <div className="workoutRow"><input required aria-label="Ejercicio" value={ex.name} onChange={e=>setExercise(i,j,{name:e.target.value})}/><button type="button" className="secondary" disabled={d.exercises.length===1} onClick={()=>setDay(i,{exercises:d.exercises.filter((_,k)=>k!==j)})}>✕</button></div>
