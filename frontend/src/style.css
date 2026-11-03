@@ -436,3 +436,13 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 @media(max-width:650px){.templateExercise .workoutFields{grid-template-columns:repeat(2,minmax(0,1fr))}.templateAssign{flex-direction:column;align-items:stretch}}
 
 .templateExercisePreview{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}.templateExerciseImage{width:70px;height:70px;object-fit:contain;flex-shrink:0;border-radius:10px;background:rgba(255,255,255,.05)}.templateExercisePreview>div{display:flex;flex-direction:column;gap:5px;min-width:0}.templateExercisePreview small{color:#aab6c7}
+
+/* Exercise types, instructions and timed sets */
+.catalogExerciseSettings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;align-items:end}
+.catalogExerciseSettings label{display:flex;flex-direction:column;gap:5px;min-width:0;font-size:12px}
+.catalogExerciseSettings label:last-child{grid-column:1/-1}
+.catalogExerciseSettings select,.catalogExerciseSettings input,.catalogExerciseSettings textarea{width:100%;min-width:0}
+.workoutInstructions{padding:12px 14px;border-left:3px solid #ee7490;background:rgba(238,116,144,.08);border-radius:8px;line-height:1.6}
+.workoutExerciseTimer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:5px 0}
+.workoutExerciseTimer>strong{font-variant-numeric:tabular-nums;font-size:19px;color:#f6b56f}
+@media(max-width:550px){.catalogExerciseSettings{grid-template-columns:1fr}}
