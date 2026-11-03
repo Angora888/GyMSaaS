@@ -16,8 +16,11 @@ public sealed class GymDbContext(DbContextOptions<GymDbContext> options):DbConte
  public DbSet<TrainerMember> TrainerMembers=>Set<TrainerMember>();
  public DbSet<WorkoutRoutine> Routines=>Set<WorkoutRoutine>();
  public DbSet<MemberWorkoutProgram> MemberWorkoutPrograms=>Set<MemberWorkoutProgram>();
+ public DbSet<WorkoutTemplate> WorkoutTemplates=>Set<WorkoutTemplate>();
  public DbSet<MemberWorkoutSession> MemberWorkoutSessions=>Set<MemberWorkoutSession>();
  protected override void OnModelCreating(ModelBuilder b){
+  b.Entity<WorkoutTemplate>().HasIndex(x=>new{x.GymId,x.Name}).IsUnique();
+  b.Entity<WorkoutTemplate>().HasOne<Gym>().WithMany().HasForeignKey(x=>x.GymId).OnDelete(DeleteBehavior.Cascade);
   b.Entity<MemberWorkoutProgram>().HasIndex(x=>new{x.GymId,x.MemberId});
   b.Entity<MemberWorkoutProgram>().HasOne<Member>().WithMany().HasForeignKey(x=>new{x.GymId,x.MemberId}).HasPrincipalKey(x=>new{x.GymId,x.Id}).OnDelete(DeleteBehavior.Cascade);
   b.Entity<MemberWorkoutSession>().HasIndex(x=>new{x.GymId,x.MemberId});
