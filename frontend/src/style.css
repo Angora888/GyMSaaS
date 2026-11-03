@@ -400,3 +400,21 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 /* Live exercise count shown beside each day during workout editing. */
 .workoutDayExerciseCount{flex:0 0 auto;white-space:nowrap;border:1px solid #b93d55;border-radius:999px;padding:7px 10px;color:#ff8395;background:rgba(232,42,76,.09);font-size:.8rem;font-weight:700}
 @media(max-width:540px){.workoutDayEditor>.workoutRow{flex-wrap:wrap}.workoutDayEditor>.workoutRow>input{flex:1 1 65%;min-width:0}.workoutDayExerciseCount{order:3;margin-right:auto}}
+
+/* Post-workout achievement and social sharing */
+.workoutCelebration{position:relative;overflow:hidden;text-align:center;padding:32px 20px!important;border:1px solid rgba(246,104,132,.5)!important;background:radial-gradient(circle at top,#392232 0%,#1c2231 65%,#171d2b 100%)!important}
+.celebrationFire{font-size:34px;letter-spacing:8px;margin-bottom:14px;animation:celebrationPop .7s ease-out both}
+.celebrationTag{display:inline-block;color:#ff97af;font-weight:800;letter-spacing:.13em;font-size:11px}
+.workoutCelebration>h2{font-size:clamp(32px,7vw,46px);line-height:1.1;color:#fff;margin:12px 0}
+.workoutCelebration>p{color:#c4cedd}
+.celebrationTitle{display:flex;flex-direction:column;gap:5px;margin:22px auto;max-width:560px;color:#eef2f8}
+.celebrationTitle strong{font-size:18px}.celebrationTitle small{color:#a2b1c6}
+.celebrationMetrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:650px;margin:20px auto}
+.celebrationMetrics>div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px 8px}
+.celebrationMetrics>div>span{font-size:26px}.celebrationMetrics strong{font-size:clamp(20px,4vw,30px);color:#fff;overflow-wrap:anywhere}.celebrationMetrics small{color:#afbed0;font-size:12px}
+.workoutCelebration .celebrationNote{font-size:12px;line-height:1.5;color:#9eafc2;max-width:620px;margin:15px auto}
+.workoutCelebration .celebrationBest{color:#f3bd8f}
+.celebrationActions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.celebrationActions button{min-height:44px}
+@keyframes celebrationPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@media(max-width:480px){.celebrationMetrics{gap:9px}.celebrationMetrics>div{padding:16px 5px}.celebrationActions{flex-direction:column}.celebrationActions button{width:100%}}
