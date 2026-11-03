@@ -418,3 +418,19 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .celebrationActions button{min-height:44px}
 @keyframes celebrationPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
 @media(max-width:480px){.celebrationMetrics{gap:9px}.celebrationMetrics>div{padding:16px 5px}.celebrationActions{flex-direction:column}.celebrationActions button{width:100%}}
+
+/* Reusable workout templates: gym administration */
+.workoutTemplatePanel{min-width:0}.workoutTemplatePanel .memberhead{gap:12px;flex-wrap:wrap}
+.templateGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:20px 0}
+.templateCard{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);padding:18px;border-radius:14px;color:inherit;cursor:pointer}
+.templateCard.selected{border-color:#ed6682;background:rgba(237,102,130,.11)}
+.templateCard small{color:#abb7ca}
+.templateDetails{margin-top:20px}.templateAssign{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin:22px 0}.templateAssign label{flex:1;min-width:210px}.templateAssign select{width:100%}
+.templateForm{display:flex;flex-direction:column;gap:15px;margin:18px 0}
+.templateForm>label{display:flex;flex-direction:column;gap:7px}
+.templateDay{display:flex;flex-direction:column;gap:13px}
+.templateExercise{border-top:1px solid rgba(255,255,255,.13);padding-top:10px}
+.templateExercise .workoutFields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.templateExercise .workoutFields label{min-width:0}
+.templateExercise .workoutFields input{width:100%;min-width:0}
+@media(max-width:650px){.templateExercise .workoutFields{grid-template-columns:repeat(2,minmax(0,1fr))}.templateAssign{flex-direction:column;align-items:stretch}}
