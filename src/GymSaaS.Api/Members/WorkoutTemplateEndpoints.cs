@@ -13,7 +13,7 @@ public static class WorkoutTemplateEndpoints {
   group.MapGet("",async(ClaimsPrincipal user,GymDbContext db)=>{
    if(!Guid.TryParse(user.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
    var templates=await db.WorkoutTemplates.AsNoTracking().Where(t=>t.GymId==gym).OrderBy(t=>t.Name).ToListAsync();
-   return Results.Ok(templates.Select(t=>new{t.Id,t.Name,t.Description,t.CreatedAt,days=JsonSerializer.Deserialize<List<WorkoutDay>>(t.DaysJson)}));
+   return Results.Ok(templates.Select(t=>new{t.Id,t.Name,t.Description,t.CreatedAt,days=JsonSerializer.Deserialize<List<WorkoutDay>>(t.DaysJson,new JsonSerializerOptions(JsonSerializerDefaults.Web))}));
   });
   group.MapPost("",async(WorkoutProgramInput input,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Guid.TryParse(user.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
@@ -41,7 +41,7 @@ public static class WorkoutTemplateEndpoints {
    var existing=await db.MemberWorkoutPrograms.AnyAsync(p=>p.GymId==gym&&p.MemberId==input.MemberId&&p.Name==template.Name);
    if(existing)return Results.Conflict(new{message="Este miembro ya tiene una rutina con ese nombre. Revisala antes de volver a asignarla."});
    // Independent copy: editing a template never changes an assigned routine or exercise IDs in progress.
-   var days=JsonSerializer.Deserialize<List<WorkoutDay>>(template.DaysJson);
+   var days=JsonSerializer.Deserialize<List<WorkoutDay>>(template.DaysJson,new JsonSerializerOptions(JsonSerializerDefaults.Web));
    if(days is null||days.Count==0)return Results.BadRequest(new{message="La plantilla está vacía."});
    var copy=days.Select(d=>d with{Id=Guid.NewGuid().ToString(),Exercises=d.Exercises.Select(e=>e with{Id=Guid.NewGuid().ToString()}).ToList()}).ToList();
    var routine=new MemberWorkoutProgram{GymId=gym,MemberId=input.MemberId,Name=template.Name,Description=template.Description,IsActive=false,DaysJson=JsonSerializer.Serialize(copy)};
