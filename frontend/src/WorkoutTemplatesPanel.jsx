@@ -9,8 +9,8 @@ const normalize=(source)=>{
  const weekdayPresets=[[1],[3],[5],[2],[4],[6],[0]];
  return {name:String(source.name||'').trim(),description:String(source.description||'').slice(0,1000),isActive:true,
   days:days.map((day,i)=>({id:uid(),name:String(day.name||'Día '+(i+1)),weekdays:Array.isArray(day.weekdays)?day.weekdays:weekdayPresets[i%7],
-   exercises:(day.exercises||[]).map(ex=>({id:uid(),name:String(ex.name||'').trim(),category:String(ex.category||'Calistenia').slice(0,80),sets:Number(ex.sets||source.default_sets||4),
-    reps:Number(ex.reps||source.default_reps||(ex.duration_seconds?1:12)),restSeconds:Number(ex.restSeconds??ex.rest_seconds??120)}))}))};
+   exercises:(day.exercises||[]).map(ex=>({id:uid(),name:String(ex.name||'').trim()+(ex.duration_seconds?' ('+Number(ex.duration_seconds)+' segundos por serie)':''),category:String(ex.category||'Calistenia').slice(0,80),sets:Number(ex.sets||source.default_sets||4),
+    reps:Number(ex.duration_seconds?1:(ex.reps||source.default_reps||12)),restSeconds:Number(ex.restSeconds??ex.rest_seconds??120)}))}))};
 };
 export default function WorkoutTemplatesPanel({token,members}){
  const [catalog,setCatalog]=useState([]),[templates,setTemplates]=useState([]),[selected,setSelected]=useState(''),[member,setMember]=useState(''),[editing,setEditing]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
