@@ -434,3 +434,5 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 .templateExercise .workoutFields label{min-width:0}
 .templateExercise .workoutFields input{width:100%;min-width:0}
 @media(max-width:650px){.templateExercise .workoutFields{grid-template-columns:repeat(2,minmax(0,1fr))}.templateAssign{flex-direction:column;align-items:stretch}}
+
+.templateExercisePreview{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}.templateExerciseImage{width:70px;height:70px;object-fit:contain;flex-shrink:0;border-radius:10px;background:rgba(255,255,255,.05)}.templateExercisePreview>div{display:flex;flex-direction:column;gap:5px;min-width:0}.templateExercisePreview small{color:#aab6c7}
