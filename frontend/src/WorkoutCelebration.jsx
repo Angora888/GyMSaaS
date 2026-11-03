@@ -8,7 +8,7 @@ export const durationLabel=minutes=>minutes>=60?Math.floor(minutes/60)+' h '+Str
 export function workoutStats(session,day){
  const completed=new Set(session.completed||[]);
  const exercises=day?.exercises||[];
- const exerciseDone=exercises.filter(ex=>Array.from({length:Number(ex.sets)||0},(_,i)=>ex.id+':'+(i+1)).some(key=>completed.has(key))).length;
+ const exerciseDone=exercises.filter(ex=>Number(ex.sets)>0&&Array.from({length:Number(ex.sets)},(_,i)=>ex.id+':'+(i+1)).every(key=>completed.has(key))).length;
  let totalVolumeKg=0,weightSets=0,maxKg=0;
  for(const ex of exercises)for(let i=1;i<=Number(ex.sets||0);i++){
   const key=ex.id+':'+i;
@@ -78,11 +78,11 @@ export default function WorkoutCelebration({session,program,day,onClose}){
   <div className="celebrationTitle"><strong>{program?.name||'Mi rutina'}</strong><small>{day?.name||''} · {stamp(session.finishedAt||new Date())}</small></div>
   <div className="celebrationMetrics">
    <div><span>⏱</span><strong>{durationLabel(stats.minutes)}</strong><small>Tiempo entrenado</small></div>
-   <div><span>💪</span><strong>{stats.exercises} / {stats.plannedExercises}</strong><small>Ejercicios completados*</small></div>
+   <div><span>💪</span><strong>{stats.exercises} / {stats.plannedExercises}</strong><small>Ejercicios completados</small></div>
    <div><span>✅</span><strong>{stats.sets} / {stats.plannedSets}</strong><small>Series completadas</small></div>
    <div><span>🏋️</span><strong>{stats.volumeLb.toLocaleString('es-CR')} lb</strong><small>Volumen estimado</small></div>
   </div>
-  <p className="celebrationNote">*Un ejercicio cuenta al completar al menos una de sus series. El volumen se estima multiplicando cada peso registrado por las repeticiones planificadas. No se incluyen series sin peso registrado.</p>
+  <p className="celebrationNote">Un ejercicio cuenta cuando se completan todas sus series. El volumen se estima multiplicando cada peso registrado por las repeticiones planificadas. No se incluyen series sin peso registrado.</p>
   {stats.maxLb>0&&<p className="celebrationBest">🔥 Mayor peso registrado en una serie: <strong>{stats.maxLb.toLocaleString('es-CR')} lb</strong></p>}
   <div className="celebrationActions">
    <button type="button" className="primary" onClick={share} disabled={sharing}>{sharing?'Preparando imagen…':'📲 Compartir mi logro'}</button>
