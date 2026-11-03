@@ -8,15 +8,16 @@ using GymSaaS.Api.Models;
 using GymSaaS.Api.Public;
 using Microsoft.EntityFrameworkCore;
 namespace GymSaaS.Api.Members;
-public sealed record CatalogEntry(string Category,string Name,int DefaultSets=4,int DefaultReps=10,int DefaultRestSeconds=120,string? Notes=null);
+public sealed record CatalogEntry(string Category,string Name,int DefaultSets=4,int DefaultReps=10,int DefaultRestSeconds=120,string? Notes=null,string ExerciseType="reps",int DurationSeconds=0,string? Instructions=null);
 public sealed record CatalogImageInput(string? ImageUrl);
+public sealed record CatalogDetailsInput(string ExerciseType,int DurationSeconds,string? Instructions);
 public sealed record CatalogImport(List<CatalogEntry> Exercises);
 public static class ExerciseCatalogEndpoints {
  public static IEndpointRouteBuilder MapExerciseCatalog(this IEndpointRouteBuilder app){
   var group=app.MapGroup("/api/admin/exercise-catalog").RequireAuthorization(p=>p.RequireRole("Owner"));
   group.MapGet("",async(ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
-   return Results.Ok(await db.ExerciseCatalogItems.AsNoTracking().Where(x=>x.GymId==gym).OrderBy(x=>x.Category).ThenBy(x=>x.Name).Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes,x.ImageUrl}).ToListAsync());
+   return Results.Ok(await db.ExerciseCatalogItems.AsNoTracking().Where(x=>x.GymId==gym).OrderBy(x=>x.Category).ThenBy(x=>x.Name).Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes,x.ImageUrl,x.ExerciseType,x.DurationSeconds,x.Instructions}).ToListAsync());
   });
   app.MapGet("/api/member/exercise-catalog",async(ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gymId)||!Guid.TryParse(principal.FindFirst("member_id")?.Value,out var memberId))return Results.Unauthorized();
@@ -25,6 +26,16 @@ public static class ExerciseCatalogEndpoints {
     .OrderBy(x=>x.Category).ThenBy(x=>x.Name)
     .Select(x=>new{x.Id,x.Category,x.Name,x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes,x.ImageUrl}).ToListAsync());
   }).RequireAuthorization(p=>p.RequireRole("Member"));
+  group.MapPut("/{id:guid}/details",async(Guid id,CatalogDetailsInput input,ClaimsPrincipal principal,GymDbContext db)=>{
+   if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
+   if(input.ExerciseType is not ("reps" or "timed" or "isometric") || input.DurationSeconds<0 || input.DurationSeconds>3600 || (input.ExerciseType!="reps"&&input.DurationSeconds<1) || input.Instructions?.Length>2000)
+    return Results.BadRequest(new{message="Tipo, duración o instrucciones inválidas."});
+   var item=await db.ExerciseCatalogItems.SingleOrDefaultAsync(x=>x.Id==id&&x.GymId==gym);
+   if(item is null)return Results.NotFound();
+   item.ExerciseType=input.ExerciseType;item.DurationSeconds=input.ExerciseType=="reps"?0:input.DurationSeconds;item.Instructions=input.Instructions?.Trim();
+   await db.SaveChangesAsync();
+   return Results.Ok(new{item.Id,item.ExerciseType,item.DurationSeconds,item.Instructions});
+  });
   group.MapPut("/{id:guid}/image",async(Guid id,CatalogImageInput input,ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
    var image=input.ImageUrl?.Trim();
@@ -95,8 +106,8 @@ public static class ExerciseCatalogEndpoints {
   group.MapPost("/import",async(CatalogImport input,ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym))return Results.Unauthorized();
    if(input.Exercises is null||input.Exercises.Count is <1 or >500)return Results.BadRequest(new{message="El catálogo debe contener entre 1 y 500 ejercicios."});
-   var items=input.Exercises.Select(x=>new CatalogEntry(x.Category?.Trim()??"",x.Name?.Trim()??"",x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes?.Trim())).ToList();
-   if(items.Any(x=>x.Category.Length is <2 or >80||x.Name.Length is <2 or >120||x.DefaultSets is <1 or >20||x.DefaultReps is <1 or >1000||x.DefaultRestSeconds is <0 or >3600||x.Notes?.Length>500))
+   var items=input.Exercises.Select(x=>new CatalogEntry(x.Category?.Trim()??"",x.Name?.Trim()??"",x.DefaultSets,x.DefaultReps,x.DefaultRestSeconds,x.Notes?.Trim(),x.ExerciseType??"reps",x.DurationSeconds,x.Instructions?.Trim())).ToList();
+   if(items.Any(x=>x.Category.Length is <2 or >80||x.Name.Length is <2 or >120||x.DefaultSets is <1 or >20||x.DefaultReps is <1 or >1000||x.DefaultRestSeconds is <0 or >3600||x.Notes?.Length>500||x.ExerciseType is not ("reps" or "timed" or "isometric")||x.DurationSeconds<0||x.DurationSeconds>3600||(x.ExerciseType!="reps"&&x.DurationSeconds<1)||x.Instructions?.Length>2000))
     return Results.BadRequest(new{message="Revisá categorías, nombres, series, repeticiones y descansos."});
    var duplicates=items.GroupBy(x=>x.Category.ToLowerInvariant()+"|"+x.Name.ToLowerInvariant()).Any(g=>g.Count()>1);
    if(duplicates)return Results.BadRequest(new{message="El archivo tiene ejercicios duplicados en una categoría."});
@@ -106,7 +117,7 @@ public static class ExerciseCatalogEndpoints {
    foreach(var e in items){
     var key=e.Category.ToLowerInvariant()+"|"+e.Name.ToLowerInvariant();
     if(!byKey.TryGetValue(key,out var row)){row=new ExerciseCatalogItem{GymId=gym,Category=e.Category,Name=e.Name};db.ExerciseCatalogItems.Add(row);byKey[key]=row;added++;}else updated++;
-    row.DefaultSets=e.DefaultSets;row.DefaultReps=e.DefaultReps;row.DefaultRestSeconds=e.DefaultRestSeconds;row.Notes=e.Notes;
+    row.DefaultSets=e.DefaultSets;row.DefaultReps=e.DefaultReps;row.DefaultRestSeconds=e.DefaultRestSeconds;row.Notes=e.Notes;row.ExerciseType=e.ExerciseType;row.DurationSeconds=e.ExerciseType=="reps"?0:e.DurationSeconds;row.Instructions=e.Instructions;
    }
    await db.SaveChangesAsync();
    return Results.Ok(new{added,updated,total=byKey.Count});
