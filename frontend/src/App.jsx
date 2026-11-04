@@ -1,3 +1,4 @@
+import PersonalPortal from './PersonalPortal.jsx';
 import WorkoutTemplatesPanel from './WorkoutTemplatesPanel.jsx';
 import PublicHome from './PublicHome.jsx';
 import BrandingEditor,{themeStyle} from './BrandingEditor.jsx';
@@ -32,6 +33,7 @@ function Icon({children}){return <span className="icon">{children}</span>}
 export default function App(){
  const portalSlug=window.location.pathname.match(/^\/g\/([a-z0-9-]+)\/?$/)?.[1];
  if(portalSlug)return <GymPortal slug={portalSlug}/>;
+ if(window.location.pathname==='/mi-rutina'||window.location.pathname==='/mi-rutina/')return <PersonalPortal/>;
  if(window.location.pathname==='/' )return <PublicHome/>;
  return <AdminApp/>;
 }
