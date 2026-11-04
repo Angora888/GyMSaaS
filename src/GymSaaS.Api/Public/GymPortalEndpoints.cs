@@ -21,10 +21,12 @@ public static class GymPortalEndpoints {
  }
  public static IEndpointRouteBuilder MapGymPortal(this IEndpointRouteBuilder app){
   app.MapGet("/api/public/gyms/{slug}",async(string slug,GymDbContext db)=>{
+   if(slug=="personal-space-internal")return Results.NotFound();
    var gym=await db.Gyms.AsNoTracking().Where(g=>g.Slug==slug&&g.IsActive).Select(g=>new{g.Name,g.Slug,g.BrandPrimary,g.BrandAccent,g.BrandBackground,g.BrandTagline,g.BrandLogoUrl}).SingleOrDefaultAsync();
    return gym is null?Results.NotFound():Results.Ok(gym);
   });
   app.MapPost("/api/public/gyms/{slug}/signup",async(string slug,MemberSignup input,GymDbContext db,IConfiguration config,IPasswordHasher<MemberIdentity> hasher)=>{
+   if(slug=="personal-space-internal")return Results.NotFound();
    var validator=new List<ValidationResult>();
    if(!Validator.TryValidateObject(input,new ValidationContext(input),validator,true)||string.IsNullOrWhiteSpace(input.FullName))return Results.ValidationProblem(new Dictionary<string,string[]>{{"signup",["Datos de registro inválidos."]}});
    var gym=await db.Gyms.AsNoTracking().Where(g=>g.Slug==slug&&g.IsActive).Select(g=>new{g.Id}).SingleOrDefaultAsync();
@@ -55,6 +57,7 @@ public static class GymPortalEndpoints {
    }
   }).RequireRateLimiting("auth-ip");
   app.MapPost("/api/public/gyms/{slug}/login",async(string slug,MemberLogin input,GymDbContext db,IConfiguration config,IPasswordHasher<MemberIdentity> hasher)=>{
+   if(slug=="personal-space-internal")return Results.NotFound();
    var gym=await db.Gyms.AsNoTracking().SingleOrDefaultAsync(g=>g.Slug==slug&&g.IsActive);
    if(gym is null)return Results.NotFound();
    var identity=await db.MemberIdentities.AsNoTracking().SingleOrDefaultAsync(x=>x.GymId==gym.Id&&x.Email==input.Email.Trim().ToLowerInvariant());
