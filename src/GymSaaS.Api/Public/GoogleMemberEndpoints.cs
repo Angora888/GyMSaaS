@@ -7,6 +7,7 @@ public sealed record GoogleCredential(string Credential);
 public static class GoogleMemberEndpoints {
  public static IEndpointRouteBuilder MapGoogleMember(this IEndpointRouteBuilder app){
   app.MapPost("/api/public/gyms/{slug}/google",async(string slug,GoogleCredential req,GymDbContext db,IConfiguration config)=>{
+   if(slug=="personal-space-internal")return Results.NotFound();
    var clientId=config["Google:ClientId"];
    if(string.IsNullOrEmpty(clientId))return Results.Problem("Google not configured",statusCode:503);
    GoogleJsonWebSignature.Payload payload;
