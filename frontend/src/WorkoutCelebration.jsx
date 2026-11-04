@@ -9,10 +9,12 @@ export function workoutStats(session,day){
  const completed=new Set(session.completed||[]);
  const exercises=day?.exercises||[];
  const exerciseDone=exercises.filter(ex=>Number(ex.sets)>0&&Array.from({length:Number(ex.sets)},(_,i)=>ex.id+':'+(i+1)).every(key=>completed.has(key))).length;
- let totalVolumeKg=0,weightSets=0,maxKg=0;
+ let totalVolumeKg=0,weightSets=0,maxKg=0,totalReps=0;
  for(const ex of exercises)for(let i=1;i<=Number(ex.sets||0);i++){
   const key=ex.id+':'+i;
   if(!completed.has(key))continue;
+  const type=ex.exerciseType||(/segundos? por serie/i.test(ex.name||'')?'isometric':'reps');
+  if(type==='reps')totalReps+=Number(ex.reps||0);
   const value=Number(session.weights?.[key]);
   if(session.weights?.[key]!=null&&Number.isFinite(value)&&value>0){
    weightSets++;maxKg=Math.max(maxKg,value);
@@ -23,9 +25,10 @@ export function workoutStats(session,day){
  const end=session.finishedAt?new Date(session.finishedAt):new Date();
  const start=new Date(session.startedAt);
  const minutes=Number.isFinite(start.getTime())?Math.max(0,Math.round((end-start)/60000)):0;
- return {minutes,exercises:exerciseDone,plannedExercises:exercises.length,sets:completed.size,plannedSets:exercises.reduce((a,e)=>a+Number(e.sets||0),0),volumeLb:pounds(totalVolumeKg),maxLb:pounds(maxKg),weightSets};
+ return {minutes,exercises:exerciseDone,plannedExercises:exercises.length,sets:completed.size,plannedSets:exercises.reduce((a,e)=>a+Number(e.sets||0),0),volumeLb:pounds(totalVolumeKg),maxLb:pounds(maxKg),weightSets,totalReps,showReps:weightSets===0};
 }
-const textFor=(s,program,day)=>'🏋️ ¡Entrenamiento completado!\n'+(program?.name||'Mi rutina')+' · '+(day?.name||'')+'\n⏱ '+durationLabel(s.minutes)+' · 💪 '+s.exercises+' ejercicios · ✅ '+s.sets+' series\n🏋️ '+s.volumeLb.toLocaleString('es-CR')+' lb de volumen estimado ('+s.weightSets+' series con peso)\nHecho con Gym SaaS';
+const textFor=(s,program,day)=>'🏋️ ¡Entrenamiento completado!\n'+(program?.name||'Mi rutina')+' · '+(day?.name||'')+'\n⏱ '+durationLabel(s.minutes)+' · 💪 '+s.exercises+' ejercicios · ✅ '+s.sets+' series\n'+(s.showReps?'🔁 '+s.totalReps.toLocaleString('es-CR')+' repeticiones estimadas':'🏋️ '+s.volumeLb.toLocaleString('es-CR')+' lb de volumen estimado')+'\nHecho con Gym SaaS';
+
 function paint(ctx,w,h,s,program,day,date){
  const background=ctx.createLinearGradient(0,0,w,h);background.addColorStop(0,'#0d1320');background.addColorStop(1,'#2d1422');
  ctx.fillStyle=background;ctx.fillRect(0,0,w,h);
@@ -37,10 +40,10 @@ function paint(ctx,w,h,s,program,day,date){
  const metric=(x,y,value,label)=>{ctx.fillStyle='#fff';ctx.font='bold 78px system-ui, Arial';ctx.fillText(String(value),x,y);ctx.fillStyle='#bac7da';ctx.font='30px system-ui, Arial';ctx.fillText(label,x,y+48)};
  metric(115,617,durationLabel(s.minutes),'TIEMPO ENTRENADO');
  metric(115,803,s.exercises,'EJERCICIOS');metric(590,803,s.sets,'SERIES');
- metric(115,983,s.volumeLb.toLocaleString('es-CR')+' lb','VOLUMEN ESTIMADO');
+ metric(115,983,s.showReps?s.totalReps.toLocaleString('es-CR')+' reps':s.volumeLb.toLocaleString('es-CR')+' lb',s.showReps?'REPETICIONES TOTALES':'VOLUMEN ESTIMADO');
  ctx.fillStyle='#fff';ctx.font='bold 40px system-ui, Arial';ctx.fillText((program?.name||'Mi rutina').slice(0,38),78,1161);
  ctx.fillStyle='#c5ccdb';ctx.font='30px system-ui, Arial';ctx.fillText((day?.name||'')+' · '+stamp(date),78,1212);
- ctx.font='25px system-ui, Arial';ctx.fillStyle='#8c9bae';ctx.fillText('Volumen basado en repeticiones planificadas',78,1278);
+ ctx.font='25px system-ui, Arial';ctx.fillStyle='#8c9bae';ctx.fillText(s.showReps?'Repeticiones estimadas de series completadas':'Volumen basado en repeticiones planificadas',78,1278);
 }
 export default function WorkoutCelebration({session,program,day,onClose}){
  const [sharing,setSharing]=useState(false),[notice,setNotice]=useState('');
@@ -80,9 +83,9 @@ export default function WorkoutCelebration({session,program,day,onClose}){
    <div><span>⏱</span><strong>{durationLabel(stats.minutes)}</strong><small>Tiempo entrenado</small></div>
    <div><span>💪</span><strong>{stats.exercises} / {stats.plannedExercises}</strong><small>Ejercicios completados</small></div>
    <div><span>✅</span><strong>{stats.sets} / {stats.plannedSets}</strong><small>Series completadas</small></div>
-   <div><span>🏋️</span><strong>{stats.volumeLb.toLocaleString('es-CR')} lb</strong><small>Volumen estimado</small></div>
+   <div><span>{stats.showReps?'🔁':'🏋️'}</span><strong>{stats.showReps?stats.totalReps.toLocaleString('es-CR')+' reps':stats.volumeLb.toLocaleString('es-CR')+' lb'}</strong><small>{stats.showReps?'Repeticiones totales':'Volumen estimado'}</small></div>
   </div>
-  <p className="celebrationNote">Un ejercicio cuenta cuando se completan todas sus series. El volumen se estima multiplicando cada peso registrado por las repeticiones planificadas. No se incluyen series sin peso registrado.</p>
+  <p className="celebrationNote">Un ejercicio cuenta cuando se completan todas sus series. {stats.showReps?'Las repeticiones se estiman a partir de las series completadas y las repeticiones previstas. Los ejercicios cronometrados no suman repeticiones.':'El volumen se estima multiplicando cada peso registrado por las repeticiones planificadas. No se incluyen series sin peso registrado.'}</p>
   {stats.maxLb>0&&<p className="celebrationBest">🔥 Mayor peso registrado en una serie: <strong>{stats.maxLb.toLocaleString('es-CR')} lb</strong></p>}
   <div className="celebrationActions">
    <button type="button" className="primary" onClick={share} disabled={sharing}>{sharing?'Preparando imagen…':'📲 Compartir mi logro'}</button>
