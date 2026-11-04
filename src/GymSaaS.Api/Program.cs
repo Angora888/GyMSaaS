@@ -101,6 +101,7 @@ app.MapMembershipEndpoints();
 app.MapPayments();
 app.MapAttendanceEndpoints();
 app.MapGymPortal();
+app.MapPersonalPortal();
 app.MapGoogleMember();
 app.MapGoogleOwner();
 app.MapMemberDashboard();
