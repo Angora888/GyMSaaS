@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Google.Apis.Auth;
 using System.Security.Claims;
 using GymSaaS.Api.Data;
 using GymSaaS.Api.Models;
@@ -50,6 +51,42 @@ public static class PersonalPortalEndpoints {
     return Results.Unauthorized();
    if(!await db.Gyms.AsNoTracking().AnyAsync(x=>x.Id==PersonalGymId&&x.IsActive))return Results.Unauthorized();
    return Results.Ok(new{token=GymPortalEndpoints.MemberToken(user,config)});
+  });
+  group.MapPost("/google",async(GoogleCredential req,GymDbContext db,IConfiguration config)=>{
+   var clientId=config["Google:ClientId"];
+   if(string.IsNullOrWhiteSpace(clientId))return Results.Problem("El inicio con Google no está configurado.",statusCode:503);
+   if(string.IsNullOrWhiteSpace(req.Credential))return Results.Unauthorized();
+   GoogleJsonWebSignature.Payload payload;
+   try{
+    payload=await GoogleJsonWebSignature.ValidateAsync(req.Credential,new GoogleJsonWebSignature.ValidationSettings{Audience=new[]{clientId}});
+   }catch(InvalidJwtException){return Results.Unauthorized();}
+   if(payload.EmailVerified!=true||string.IsNullOrWhiteSpace(payload.Subject)||string.IsNullOrWhiteSpace(payload.Email))return Results.Unauthorized();
+   if(!await db.Gyms.AsNoTracking().AnyAsync(x=>x.Id==PersonalGymId&&x.IsActive))
+    return Results.Problem("Mi Rutina no está configurada.",statusCode:503);
+   var identity=await db.MemberIdentities.AsNoTracking()
+    .SingleOrDefaultAsync(x=>x.GymId==PersonalGymId&&x.GoogleSubject==payload.Subject);
+   if(identity is not null)return Results.Ok(new{token=GymPortalEndpoints.MemberToken(identity,config)});
+   var email=payload.Email.Trim().ToLowerInvariant();
+   // Never silently join an existing password account: use explicit verified linking in a later feature.
+   if(await db.MemberIdentities.AsNoTracking().AnyAsync(x=>x.GymId==PersonalGymId&&x.Email==email))
+    return Results.Conflict(new{message="Ya tenés una cuenta personal con ese correo. Ingresá con contraseña; la vinculación de Google estará disponible próximamente."});
+   await using var transaction=await db.Database.BeginTransactionAsync();
+   try{
+    var member=new Member{GymId=PersonalGymId,FullName=string.IsNullOrWhiteSpace(payload.Name)?email.Split('@')[0]:payload.Name.Trim(),Email=email};
+    db.Members.Add(member);
+    await db.SaveChangesAsync();
+    var newIdentity=new MemberIdentity{GymId=PersonalGymId,MemberId=member.Id,Email=email,GoogleSubject=payload.Subject,PasswordHash=""};
+    db.MemberIdentities.Add(newIdentity);
+    await db.SaveChangesAsync();
+    await transaction.CommitAsync();
+    return Results.Ok(new{token=GymPortalEndpoints.MemberToken(newIdentity,config)});
+   }catch(DbUpdateException ex) when(ex.InnerException is PostgresException {SqlState:PostgresErrorCodes.UniqueViolation}){
+    await transaction.RollbackAsync();
+    return Results.Conflict(new{message="Ya existe una cuenta con este correo. Ingresá con tu método habitual."});
+   }catch(DbUpdateException){
+    await transaction.RollbackAsync();
+    return Results.Problem("No fue posible registrar la cuenta con Google.",statusCode:500);
+   }
   });
   group.MapGet("/me",async(ClaimsPrincipal principal,GymDbContext db)=>{
    if(!Guid.TryParse(principal.FindFirst("gym_id")?.Value,out var gym)||gym!=PersonalGymId||
