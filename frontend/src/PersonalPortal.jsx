@@ -14,7 +14,7 @@ function readToken(){
  }catch{sessionStorage.removeItem(KEY);return null}
 }
 export default function PersonalPortal(){
- const [token,setToken]=useState(readToken),[profile,setProfile]=useState(null);
+ const [token,setToken]=useState(readToken),[profile,setProfile]=useState(null),[migrationNotice,setMigrationNotice]=useState('');
  const [mode,setMode]=useState('register'),[busy,setBusy]=useState(false);
  const [error,setError]=useState(''),[form,setForm]=useState({fullName:'',email:'',password:''});
  useEffect(()=>{
@@ -34,10 +34,11 @@ export default function PersonalPortal(){
    if(!r.ok)throw Error(data.message||data.detail||'No se pudo ingresar con Google.');
    if(!data.token?.accessToken)throw Error('No se recibió una sesión válida.');
    sessionStorage.setItem(KEY,data.token.accessToken);
+   if(data.migrated)setMigrationNotice('¡Tus rutinas anteriores están aquí! Migramos '+data.migratedPrograms+' rutina(s) y '+data.migratedSessions+' entrenamiento(s) de GyM Demo. El original se conservó intacto.');
    setToken(data.token.accessToken);
   }catch(e){setError(e.message||'No se pudo ingresar con Google.')}finally{setBusy(false)}
  }
- function logout(){sessionStorage.removeItem(KEY);setToken(null);setProfile(null);setError('');setMode('login')}
+ function logout(){sessionStorage.removeItem(KEY);setToken(null);setProfile(null);setMigrationNotice('');setError('');setMode('login')}
  async function submit(e){
   e.preventDefault();if(busy)return;setBusy(true);setError('');
   try{
@@ -48,7 +49,7 @@ export default function PersonalPortal(){
    sessionStorage.setItem(KEY,data.token.accessToken);setToken(data.token.accessToken);
   }catch(e){setError(e.message)}finally{setBusy(false)}
  }
- if(token&&profile)return <div className="personalMode"><MemberHome token={token} personal onLogout={logout}/></div>;
+ if(token&&profile)return <div className="personalMode">{migrationNotice&&<div className="personalMigrationNotice" role="status">{migrationNotice}</div>}<MemberHome token={token} personal onLogout={logout}/></div>;
  if(token)return <div className="personalPortal"><div className="personalAuth"><p>Cargando tu espacio personal…</p></div></div>;
  return <div className="personalPortal"><header className="personalHeader"><a href="/" className="personalLogo">◆ GYM<span>SAAS</span></a><a className="personalHeaderLink" href="/">Inicio</a></header>
   <div className="personalIntro"><span className="personalEyebrow">MI RUTINA · BETA GRATIS</span><h1>Entrená a <em>tu manera.</em></h1><p>No necesitás un gimnasio. Creá tus rutinas, registrá tus series, seguí tu progreso y compartí cada logro.</p>
