@@ -1,3 +1,4 @@
+import GoogleLoginButton from './GoogleLoginButton.jsx';
 import React,{useEffect,useState} from 'react';
 import MemberHome from './MemberHome.jsx';
 
@@ -25,6 +26,17 @@ export default function PersonalPortal(){
    .catch(e=>{if(active){setError(e.message);sessionStorage.removeItem(KEY);setToken(null);setProfile(null)}});
   return()=>{active=false};
  },[token]);
+ async function googleLogin(credential){
+  if(busy)return;setBusy(true);setError('');
+  try{
+   const r=await fetch(API+'/api/personal/google',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential})});
+   const data=await r.json().catch(()=>({}));
+   if(!r.ok)throw Error(data.message||data.detail||'No se pudo ingresar con Google.');
+   if(!data.token?.accessToken)throw Error('No se recibió una sesión válida.');
+   sessionStorage.setItem(KEY,data.token.accessToken);
+   setToken(data.token.accessToken);
+  }catch(e){setError(e.message||'No se pudo ingresar con Google.')}finally{setBusy(false)}
+ }
  function logout(){sessionStorage.removeItem(KEY);setToken(null);setProfile(null);setError('');setMode('login')}
  async function submit(e){
   e.preventDefault();if(busy)return;setBusy(true);setError('');
@@ -49,6 +61,7 @@ export default function PersonalPortal(){
    <label>Contraseña<input required type="password" minLength={mode==='register'?12:1} autoComplete={mode==='register'?'new-password':'current-password'} value={form.password} onChange={e=>setForm(x=>({...x,password:e.target.value}))} placeholder={mode==='register'?'Mínimo 12 caracteres':'Tu contraseña'}/></label>
    {error&&<p className="error" role="alert">{error}</p>}
    <button type="submit" disabled={busy} className="primary">{busy?'Procesando…':mode==='register'?'Crear cuenta gratuita →':'Entrar a Mi Rutina →'}</button></form>
+   <div className="personalGoogleAuth"><div className="authDivider"><span>o continuá con</span></div><GoogleLoginButton onCredential={googleLogin}/></div>
    <small>Tu cuenta personal y tus rutinas están separadas de las cuentas administradas por gimnasios. Durante la beta aún no hay vinculación automática con un gym.</small>
   </div><footer className="personalFooter">MI RUTINA · GYM SAAS · Beta gratuita</footer>
  </div>;
