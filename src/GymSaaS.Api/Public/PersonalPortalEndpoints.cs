@@ -72,14 +72,75 @@ public static class PersonalPortalEndpoints {
     return Results.Conflict(new{message="Ya tenés una cuenta personal con ese correo. Ingresá con contraseña; la vinculación de Google estará disponible próximamente."});
    await using var transaction=await db.Database.BeginTransactionAsync();
    try{
-    var member=new Member{GymId=PersonalGymId,FullName=string.IsNullOrWhiteSpace(payload.Name)?email.Split('@')[0]:payload.Name.Trim(),Email=email};
+    // Controlled beta migration: only the explicitly authorized test account.
+    // Google has verified the mailbox AND its stable subject must match the old identity.
+    // The original gym member, routine and sessions are NEVER modified.
+    var legacy= email=="angora88@gmail.com"
+      ? await (from id in db.MemberIdentities.AsNoTracking()
+               join m in db.Members.AsNoTracking() on new{id.GymId,Id=id.MemberId} equals new{m.GymId,m.Id}
+               join g in db.Gyms.AsNoTracking() on m.GymId equals g.Id
+               where g.Slug=="mirutina" && id.GoogleSubject==payload.Subject && id.Email==email
+               select new{Member=m}).SingleOrDefaultAsync()
+      : null;
+    var member=new Member{
+      GymId=PersonalGymId,
+      FullName=legacy?.Member.FullName ?? (string.IsNullOrWhiteSpace(payload.Name)?email.Split('@')[0]:payload.Name.Trim()),
+      Email=email,
+      Phone=legacy?.Member.Phone,
+      EmergencyPhone=legacy?.Member.EmergencyPhone,
+      WeightKg=legacy?.Member.WeightKg,
+      HeightCm=legacy?.Member.HeightCm
+    };
     db.Members.Add(member);
     await db.SaveChangesAsync();
     var newIdentity=new MemberIdentity{GymId=PersonalGymId,MemberId=member.Id,Email=email,GoogleSubject=payload.Subject,PasswordHash=""};
     db.MemberIdentities.Add(newIdentity);
     await db.SaveChangesAsync();
+    var migratedPrograms=0;
+    var migratedSessions=0;
+    if(legacy is not null){
+      var oldGym=legacy.Member.GymId;
+      var oldMember=legacy.Member.Id;
+      var programs=await db.MemberWorkoutPrograms.AsNoTracking()
+        .Where(x=>x.GymId==oldGym && x.MemberId==oldMember).ToListAsync();
+      var programIds=new Dictionary<Guid,Guid>();
+      foreach(var p in programs){
+        var copy=new MemberWorkoutProgram{
+          GymId=PersonalGymId,MemberId=member.Id,Name=p.Name,Description=p.Description,
+          IsActive=p.IsActive,DaysJson=p.DaysJson,CreatedAt=p.CreatedAt
+        };
+        db.MemberWorkoutPrograms.Add(copy);
+        programIds[p.Id]=copy.Id;
+      }
+      await db.SaveChangesAsync();
+      migratedPrograms=programs.Count;
+      var sessions=await db.MemberWorkoutSessions.AsNoTracking()
+        .Where(x=>x.GymId==oldGym && x.MemberId==oldMember).ToListAsync();
+      foreach(var s in sessions){
+        if(!programIds.TryGetValue(s.ProgramId,out var newProgramId))
+          throw new InvalidOperationException("Sesión sin rutina de origen.");
+        db.MemberWorkoutSessions.Add(new MemberWorkoutSession{
+          GymId=PersonalGymId,MemberId=member.Id,ProgramId=newProgramId,
+          DayId=s.DayId,CompletedJson=s.CompletedJson,WeightsJson=s.WeightsJson,
+          StartedAt=s.StartedAt,FinishedAt=s.FinishedAt
+        });
+      }
+      migratedSessions=sessions.Count;
+      var measurements=await db.MemberMeasurements.AsNoTracking()
+        .Where(x=>x.GymId==oldGym && x.MemberId==oldMember).ToListAsync();
+      foreach(var measure in measurements){
+        db.MemberMeasurements.Add(new MemberMeasurement{
+          GymId=PersonalGymId,MemberId=member.Id,
+          WeightKg=measure.WeightKg,HeightCm=measure.HeightCm,RecordedAt=measure.RecordedAt
+        });
+      }
+      await db.SaveChangesAsync();
+    }
     await transaction.CommitAsync();
-    return Results.Ok(new{token=GymPortalEndpoints.MemberToken(newIdentity,config)});
+    return Results.Ok(new{
+      token=GymPortalEndpoints.MemberToken(newIdentity,config),
+      migrated=legacy is not null,migratedPrograms,migratedSessions
+    });
    }catch(DbUpdateException ex) when(ex.InnerException is PostgresException {SqlState:PostgresErrorCodes.UniqueViolation}){
     await transaction.RollbackAsync();
     return Results.Conflict(new{message="Ya existe una cuenta con este correo. Ingresá con tu método habitual."});
