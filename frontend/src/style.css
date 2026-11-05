@@ -483,3 +483,15 @@ input:focus-visible,button:focus-visible{outline:2px solid #ff7581;outline-offse
 
 /* Google sign-in within the standalone personal account form */
 .personalGoogleAuth{margin-top:20px;display:flex;align-items:center;flex-direction:column;gap:13px}.personalGoogleAuth .authDivider{width:100%;color:#b6c4d5}.personalGoogleAuth .googleLogin{width:100%;display:flex;justify-content:center}.personalGoogleAuth .googleLogin>div:first-child{max-width:100%}
+
+/* Feedback and reliable save controls for routine editing on mobile */
+.workoutToast{position:fixed;top:max(18px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:9999;width:min(540px,calc(100vw - 28px));display:flex;align-items:flex-start;gap:12px;justify-content:space-between;padding:15px 16px;border-radius:14px;border:1px solid #4e9c78;background:#18392d;color:#d9ffe8;box-shadow:0 14px 40px #0009;font-size:14px;line-height:1.45;font-weight:600}
+.workoutToast.info{border-color:#496c8e;background:#1d2c43;color:#e2edff}.workoutToast.error{border-color:#c85d65;background:#4b2028;color:#ffe0e0}
+.workoutToast button{border:0;background:transparent;color:inherit;font-size:25px;padding:0 4px;line-height:1;flex-shrink:0}
+.workoutSaveError{background:#451b27;border:1px solid #dc657b;border-radius:14px;color:#ffe0e6;padding:14px 18px}
+.workoutSaveError p{color:inherit;margin:8px 0 0}
+.workoutBuilder .workoutActions{position:sticky;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:15;background:#1a1c26f5;border:1px solid #54404b;border-radius:15px;padding:12px;box-shadow:0 -8px 26px #0007;display:flex;gap:10px;align-items:center;margin-top:25px}
+.workoutBuilder .workoutActions .primary{margin-top:0;flex:1}
+.workoutBuilder .workoutActions .secondary{flex:0 0 auto}
+.workoutBuilder{padding-bottom:115px}
+@media(max-width:550px){.workoutBuilder .workoutActions{bottom:calc(78px + env(safe-area-inset-bottom,0px));padding:10px}.workoutBuilder .workoutActions button{font-size:14px;padding:12px 10px}}
