@@ -10,9 +10,9 @@ public sealed record WorkoutProgramInput(string Name,string? Description,bool Is
 public sealed record WorkoutProgressInput(string ExerciseId,int SetNumber,bool Completed,decimal? WeightKg);
 public static class MemberWorkoutEndpoints {
  static bool Tenant(ClaimsPrincipal p,out Guid gym,out Guid member)=>Guid.TryParse(p.FindFirst("gym_id")?.Value,out gym)&Guid.TryParse(p.FindFirst("member_id")?.Value,out member);
- public static bool Valid(WorkoutProgramInput input)=>!string.IsNullOrWhiteSpace(input.Name)&&input.Name.Trim().Length<=120&&input.Description?.Length<=1000&&input.Days is {Count:>0 and <=14}&&
+ public static bool Valid(WorkoutProgramInput input)=>!string.IsNullOrWhiteSpace(input.Name)&&input.Name.Trim().Length<=120&&(input.Description is null||input.Description.Length<=1000)&&input.Days is {Count:>0 and <=14}&&
  input.Days.All(d=>!string.IsNullOrWhiteSpace(d.Id)&&d.Id.Length<=80&&!string.IsNullOrWhiteSpace(d.Name)&&d.Name.Length<=80&&d.Weekdays is not null&&d.Weekdays.All(w=>w>=0&&w<=6)&&d.Exercises is {Count:>0 and <=30}&&
- d.Exercises.All(e=>!string.IsNullOrWhiteSpace(e.Id)&&e.Id.Length<=80&&!string.IsNullOrWhiteSpace(e.Name)&&e.Name.Length<=120&&e.Sets is >=1 and <=20&&e.Reps is >=1 and <=1000&&e.RestSeconds is >=0 and <=3600&&e.ExerciseType is ("reps" or "timed" or "isometric")&&e.DurationSeconds is >=0 and <=3600&&(e.ExerciseType=="reps"||e.DurationSeconds>=1)&&e.Instructions?.Length<=2000))&&
+ d.Exercises.All(e=>!string.IsNullOrWhiteSpace(e.Id)&&e.Id.Length<=80&&!string.IsNullOrWhiteSpace(e.Name)&&e.Name.Length<=120&&e.Sets is >=1 and <=20&&e.Reps is >=1 and <=1000&&e.RestSeconds is >=0 and <=3600&&e.ExerciseType is ("reps" or "timed" or "isometric")&&e.DurationSeconds is >=0 and <=3600&&(e.ExerciseType=="reps"||e.DurationSeconds>=1)&&(e.Instructions is null||e.Instructions.Length<=2000)))&&
  input.Days.Select(d=>d.Id).Distinct().Count()==input.Days.Count&&input.Days.SelectMany(d=>d.Exercises.Select(e=>e.Id)).Distinct().Count()==input.Days.Sum(d=>d.Exercises.Count);
  public static IEndpointRouteBuilder MapMemberWorkouts(this IEndpointRouteBuilder app){
   var group=app.MapGroup("/api/member/workouts").RequireAuthorization(p=>p.RequireRole("Member"));
@@ -24,7 +24,7 @@ public static class MemberWorkoutEndpoints {
   });
   group.MapPost("",async(WorkoutProgramInput input,ClaimsPrincipal user,GymDbContext db)=>{
    if(!Tenant(user,out var gym,out var member))return Results.Unauthorized();
-   if(!Valid(input))return Results.BadRequest(new{message="Revisá los días, ejercicios, series, repeticiones y descansos."});
+   if(!Valid(input))return Results.BadRequest(new{message="No se pudo validar la rutina. Revisá nombre, días, series, repeticiones, descansos y tiempos. Las instrucciones son opcionales."});
    if(input.IsActive){var old=await db.MemberWorkoutPrograms.Where(p=>p.GymId==gym&&p.MemberId==member&&p.IsActive).ToListAsync();foreach(var p in old)p.IsActive=false;}
    var entity=new MemberWorkoutProgram{GymId=gym,MemberId=member,Name=input.Name.Trim(),Description=input.Description?.Trim(),IsActive=input.IsActive,DaysJson=JsonSerializer.Serialize(input.Days)};
    db.MemberWorkoutPrograms.Add(entity);await db.SaveChangesAsync();return Results.Ok(new{entity.Id});
