@@ -47,7 +47,8 @@ public static class PersonalPortalEndpoints {
    var email=input.Email?.Trim().ToLowerInvariant()??"";
    if(string.IsNullOrWhiteSpace(input.Password))return Results.Unauthorized();
    var user=await db.MemberIdentities.AsNoTracking().SingleOrDefaultAsync(x=>x.GymId==PersonalGymId&&x.Email==email);
-   if(user is null||hasher.VerifyHashedPassword(user,user.PasswordHash,input.Password)==PasswordVerificationResult.Failed)
+   if(user is null)return await PersonalLegacySignIn.Migrate(input,db,config,hasher);
+   if(hasher.VerifyHashedPassword(user,user.PasswordHash,input.Password)==PasswordVerificationResult.Failed)
     return Results.Unauthorized();
    if(!await db.Gyms.AsNoTracking().AnyAsync(x=>x.Id==PersonalGymId&&x.IsActive))return Results.Unauthorized();
    return Results.Ok(new{token=GymPortalEndpoints.MemberToken(user,config)});
