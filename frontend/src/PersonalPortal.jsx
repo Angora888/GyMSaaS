@@ -46,7 +46,9 @@ export default function PersonalPortal(){
    const data=await r.json().catch(()=>({}));
    if(!r.ok)throw Error(data.message||(r.status===401?'Correo o contraseña incorrectos.':'No fue posible ingresar.'));
    if(!data.token?.accessToken)throw Error('No se recibió una sesión válida.');
-   sessionStorage.setItem(KEY,data.token.accessToken);setToken(data.token.accessToken);
+   sessionStorage.setItem(KEY,data.token.accessToken);
+   if(data.migrated)setMigrationNotice('¡Bienvenida a Mi Rutina! Se copiaron '+data.migratedPrograms+' rutina(s) y '+data.migratedSessions+' entrenamiento(s) de tu cuenta anterior. Los originales siguen intactos.');
+   setToken(data.token.accessToken);
   }catch(e){setError(e.message)}finally{setBusy(false)}
  }
  if(token&&profile)return <div className="personalMode">{migrationNotice&&<div className="personalMigrationNotice" role="status">{migrationNotice}</div>}<MemberHome token={token} personal onLogout={logout}/></div>;
